@@ -1,101 +1,106 @@
-import { IsBoolean, IsEmail, IsMongoId, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import {IsBoolean, IsEmail, IsMongoId, IsNotEmpty, IsOptional, IsString, MinLength} from 'class-validator';
 
 export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
-  name: string;
+	@IsString()
+	@IsNotEmpty()
+	name: string;
 
-  @IsString()
-  last_name?: string;
+	@IsString()
+	last_name?: string;
 
-  @IsString()
-  dni?: string;
+	@IsString()
+	dni?: string;
 
-  @IsString()
-  telf?: string;
+	@IsString()
+	telf?: string;
 
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
+	@IsEmail()
+	@IsNotEmpty()
+	email: string;
 
-  @IsString()
-  password?: string;
+	@IsString()
+	password?: string;
 
-  @IsNotEmpty()
-  status: boolean;
+	@IsNotEmpty()
+	status: boolean;
 
-  @IsString()
-  role: string; // Cambia el tipo según tu esquema de rol
+	@IsString()
+	role: string; // Cambia el tipo según tu esquema de rol
 
-  googleId?: string;
+	googleId?: string;
 
-  facebookId?: string;
+	facebookId?: string;
 
-  photo?: string;
+	photo?: string;
 
-  verificationCode?: string;
+	verificationCode?: string;
 
-  password_temp?: string;
+	password_temp?: string;
 }
 
 export class UpdateUserDto {
-  @IsString()
-  @IsOptional()
-  name?: string;
+	@IsString()
+	@IsOptional()
+	name?: string;
 
-  @IsString()
-  @IsOptional()
-  last_name?: string;
+	@IsString()
+	@IsOptional()
+	last_name?: string;
 
-  @IsString()
-  @IsOptional()
-  dni?: string;
+	@IsString()
+	@IsOptional()
+	dni?: string;
 
-  @IsString()
-  @IsOptional()
-  telf?: string;
+	@IsString()
+	@IsOptional()
+	telf?: string;
 
-  @IsEmail()
-  @IsOptional()
-  email?: string;
+	@IsEmail()
+	@IsOptional()
+	email?: string;
 
-  @IsString()
-  @IsOptional()
-  @MinLength(6) // Asegura que la contraseña tenga al menos 6 caracteres si se proporciona
-  password?: string;
+	@IsString()
+	@IsOptional()
+	@MinLength(6) // Asegura que la contraseña tenga al menos 6 caracteres si se proporciona
+	password?: string;
 
-  @IsBoolean()
-  @IsOptional()
-  verificado?: boolean;
+	@IsBoolean()
+	@IsOptional()
+	verificado?: boolean;
 
-  @IsBoolean()
-  @IsOptional()
-  status?: boolean;
+	@IsBoolean()
+	@IsOptional()
+	status?: boolean;
 
-  @IsMongoId()
-  @IsOptional()
-  role?: string;
+	@IsMongoId()
+	@IsOptional()
+	role?: string;
 
-  @IsString()
-  @IsOptional()
-  googleId?: string;
+	@IsString()
+	@IsOptional()
+	googleId?: string;
 
-  @IsString()
-  @IsOptional()
-  facebookId?: string;
+	@IsString()
+	@IsOptional()
+	facebookId?: string;
 
-  @IsString()
-  @IsOptional()
-  photo?: string;
+	@IsString()
+	@IsOptional()
+	photo?: string;
 
-  @IsString()
-  @IsOptional()
-  verificationCode?: string;
+	@IsString()
+	@IsOptional()
+	verificationCode?: string;
 
-  @IsOptional()
-  createdAt?: Date;
+	@IsOptional()
+	createdAt?: Date;
 
-  @IsString()
-  @IsOptional()
-  password_temp?: string;
+	@IsString()
+	@IsOptional()
+	password_temp?: string;
+}
+
+export class FindUserByIdDto {
+  @IsMongoId({ message: 'Invalid ID format' })
+  id: string;
 }
