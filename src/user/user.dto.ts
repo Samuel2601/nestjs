@@ -1,101 +1,191 @@
-import {IsBoolean, IsEmail, IsMongoId, IsNotEmpty, IsOptional, IsString, MinLength} from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, IsOptional, IsBoolean, IsMongoId, MinLength } from 'class-validator';
 
+/**
+ * DTO para crear un nuevo usuario.
+ */
 export class CreateUserDto {
-	@IsString()
-	@IsNotEmpty()
-	name: string;
+  /**
+   * Nombre del usuario.
+   */
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
-	@IsString()
-	last_name?: string;
+  /**
+   * Apellido del usuario (opcional).
+   */
+  @IsString()
+  last_name?: string;
 
-	@IsString()
-	dni?: string;
+  /**
+   * DNI del usuario (opcional).
+   */
+  @IsString()
+  dni?: string;
 
-	@IsString()
-	telf?: string;
+  /**
+   * Teléfono del usuario (opcional).
+   */
+  @IsString()
+  telf?: string;
 
-	@IsEmail()
-	@IsNotEmpty()
-	email: string;
+  /**
+   * Correo electrónico del usuario.
+   */
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 
-	@IsString()
-	password?: string;
+  /**
+   * Contraseña del usuario (opcional).
+   */
+  @IsString()
+  password?: string;
 
-	@IsNotEmpty()
-	status: boolean;
+  /**
+   * Estado del usuario (activo o inactivo).
+   */
+  @IsNotEmpty()
+  status: boolean;
 
-	@IsString()
-	role: string; // Cambia el tipo según tu esquema de rol
+  /**
+   * Rol del usuario (referencia al ID de rol).
+   */
+  @IsString()
+  role: string; // Cambia el tipo según tu esquema de rol
 
-	googleId?: string;
+  /**
+   * ID de Google del usuario (opcional).
+   */
+  googleId?: string;
 
-	facebookId?: string;
+  /**
+   * ID de Facebook del usuario (opcional).
+   */
+  facebookId?: string;
 
-	photo?: string;
+  /**
+   * URL de la foto del usuario (opcional).
+   */
+  photo?: string;
 
-	verificationCode?: string;
+  /**
+   * Código de verificación del usuario (opcional).
+   */
+  verificationCode?: string;
 
-	password_temp?: string;
+  /**
+   * Contraseña temporal del usuario (opcional).
+   */
+  password_temp?: string;
 }
 
+/**
+ * DTO para actualizar un usuario existente.
+ */
 export class UpdateUserDto {
-	@IsString()
-	@IsOptional()
-	name?: string;
+  /**
+   * Nombre del usuario (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  name?: string;
 
-	@IsString()
-	@IsOptional()
-	last_name?: string;
+  /**
+   * Apellido del usuario (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  last_name?: string;
 
-	@IsString()
-	@IsOptional()
-	dni?: string;
+  /**
+   * DNI del usuario (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  dni?: string;
 
-	@IsString()
-	@IsOptional()
-	telf?: string;
+  /**
+   * Teléfono del usuario (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  telf?: string;
 
-	@IsEmail()
-	@IsOptional()
-	email?: string;
+  /**
+   * Correo electrónico del usuario (opcional).
+   */
+  @IsEmail()
+  @IsOptional()
+  email?: string;
 
-	@IsString()
-	@IsOptional()
-	@MinLength(6) // Asegura que la contraseña tenga al menos 6 caracteres si se proporciona
-	password?: string;
+  /**
+   * Contraseña del usuario, con al menos 6 caracteres (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  @MinLength(6)
+  password?: string;
 
-	@IsBoolean()
-	@IsOptional()
-	verificado?: boolean;
+  /**
+   * Indicador de si el usuario está verificado (opcional).
+   */
+  @IsBoolean()
+  @IsOptional()
+  verificado?: boolean;
 
-	@IsBoolean()
-	@IsOptional()
-	status?: boolean;
+  /**
+   * Estado del usuario (activo o inactivo) (opcional).
+   */
+  @IsBoolean()
+  @IsOptional()
+  status?: boolean;
 
-	@IsMongoId()
-	@IsOptional()
-	role?: string;
+  /**
+   * ID del rol asociado al usuario (opcional).
+   */
+  @IsMongoId()
+  @IsOptional()
+  role?: string;
 
-	@IsString()
-	@IsOptional()
-	googleId?: string;
+  /**
+   * ID de Google del usuario (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  googleId?: string;
 
-	@IsString()
-	@IsOptional()
-	facebookId?: string;
+  /**
+   * ID de Facebook del usuario (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  facebookId?: string;
 
-	@IsString()
-	@IsOptional()
-	photo?: string;
+  /**
+   * URL de la foto del usuario (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  photo?: string;
 
-	@IsString()
-	@IsOptional()
-	verificationCode?: string;
+  /**
+   * Código de verificación del usuario (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  verificationCode?: string;
 
-	@IsOptional()
-	createdAt?: Date;
+  /**
+   * Fecha de creación del usuario (opcional).
+   */
+  @IsOptional()
+  createdAt?: Date;
 
-	@IsString()
-	@IsOptional()
-	password_temp?: string;
+  /**
+   * Contraseña temporal del usuario (opcional).
+   */
+  @IsString()
+  @IsOptional()
+  password_temp?: string;
 }

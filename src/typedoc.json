@@ -1,0 +1,10 @@
+{
+	"entryPoints": ["src"], // Directorio donde se encuentra tu código
+	"out": "docs", // Carpeta donde se generará la documentación
+	"includeVersion": true, // Incluye la versión de tu proyecto
+	"excludeExternals": true, // Excluye los módulos externos
+	"excludePrivate": true, // Excluye los miembros privados de las clases
+	"excludeProtected": true, // Excluye los miembros protegidos de las clases
+	"readme": "README.md", // Archivo README a incluir
+	"tsconfig": "tsconfig.json" // Usa tu archivo de configuración de TypeScript
+}
