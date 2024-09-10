@@ -1,12 +1,12 @@
 import {Injectable} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
-import {RoleUser} from '../models/roleuser.schema';
-import {User} from '../models/user.schema';
 import {Model} from 'mongoose';
 import { apiResponse } from 'src/common/helpers/apiResponse';
 import { CriterioService } from 'src/common/dto/params&populate/criterioFormat.service';
-import { getPopulateFields } from '../common/dto/utils';
 import { NotificationsService } from 'src/socket.io/notifications.service';
+import { RoleUser } from 'src/userModule/models/roleuser.schema';
+import { User } from 'src/userModule/models/user.schema';
+import { getPopulateFields } from 'src/common/dto/utils';
 
 @Injectable()
 export class RoleService {

@@ -13,7 +13,7 @@ import {
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common';
-import {User} from 'src/models/user.schema';
+import {User} from 'src/userModule/models/user.schema';
 import {UserService} from './user.service';
 import {CreateUserDto, UpdateUserDto} from './user.dto';
 import { FindUserByIdDto } from 'src/common/dto/id.dto';
