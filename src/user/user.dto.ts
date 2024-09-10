@@ -99,8 +99,3 @@ export class UpdateUserDto {
 	@IsOptional()
 	password_temp?: string;
 }
-
-export class FindUserByIdDto {
-  @IsMongoId({ message: 'Invalid ID format' })
-  id: string;
-}
