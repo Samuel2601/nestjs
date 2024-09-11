@@ -44,7 +44,7 @@ export class UserService {
 	 * @returns Promesa que resuelve con una lista de usuarios.
 	 */
 	async findAll(): Promise<User[]> {
-		return this.userModel.find().populate('role').exec();
+		return this.userModel.find().populate('role').exec();;
 	}
 
 	/**

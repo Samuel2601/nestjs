@@ -15,7 +15,7 @@ import {
 import * as Dto from './role.dto';
 import { RoleService } from './role.service';
 
-@Controller('/')
+@Controller('/roles')
 export class RoleController {
   constructor(private readonly rolesService: RoleService) {}
 
@@ -39,7 +39,7 @@ export class RoleController {
     return this.rolesService.eliminarRole(id);
   }
 
-  @Post('bulk')
+  @Post('')
   async registrarRolesMasivo(@Body() body) {
     const { datos, update } = body;
     return this.rolesService.registrarRolesMasivo(datos, update);
