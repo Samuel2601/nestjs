@@ -1,20 +1,20 @@
 import {Injectable} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
 import {Model} from 'mongoose';
-import { apiResponse } from 'src/common/helpers/apiResponse';
-import { CriterioService } from 'src/common/dto/params&populate/criterioFormat.service';
-import { NotificationsService } from 'src/socket.io/notifications.service';
-import { RoleUser } from 'src/userModule/models/roleuser.schema';
-import { User } from 'src/userModule/models/user.schema';
-import { getPopulateFields } from 'src/common/dto/utils';
+import {apiResponse} from 'src/common/helpers/apiResponse';
+import {CriterioService} from 'src/common/dto/params&populate/criterioFormat.service';
+import {NotificationsService} from 'src/socket.io/notifications.service';
+import {RoleUser} from 'src/userModule/models/roleuser.schema';
+import {User} from 'src/userModule/models/user.schema';
+import {getPopulateFields} from 'src/common/dto/utils';
 
 @Injectable()
 export class RoleService {
 	constructor(
-		@InjectModel('role') private roleModel: Model<RoleUser>,
-		@InjectModel('user') private userModel: Model<User>,
+		@InjectModel(RoleUser.name) private roleModel: Model<RoleUser>,
+		@InjectModel(User.name) private userModel: Model<User>,
 		private params_populate: CriterioService,
-		private notific:NotificationsService
+		private notific: NotificationsService,
 	) {}
 
 	async obtenerRole(id: string) {
@@ -70,7 +70,7 @@ export class RoleService {
 
 			const usuarios = await this.userModel.find({role: id});
 
-			usuarios.forEach((usuario:any) => {
+			usuarios.forEach((usuario: any) => {
 				permisosRemovidos.forEach((permisoId) => {
 					this.notific.notifyPermissionChange(usuario._id, 'PERMISSION_REMOVED', permisoId);
 				});
@@ -133,6 +133,19 @@ export class RoleService {
 		} catch (error) {
 			console.error(error);
 			return apiResponse(500, 'ERROR', null, error);
+		}
+	}
+
+	async getDefaultRole(): Promise<RoleUser | null> {
+		try {
+			const defaultRole = await this.roleModel.findOne({is_default: true});
+			if (!defaultRole) {
+				return null;
+			}
+			return defaultRole;
+		} catch (error) {
+			console.error(error);
+			return error;
 		}
 	}
 }

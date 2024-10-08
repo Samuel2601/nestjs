@@ -6,14 +6,8 @@ export class Categoria extends Document {
   @Prop({ required: true, trim: true })
   name: string;
 
-  @Prop([
-    {
-      _id: false,
-      id: Types.ObjectId,
-      name: { type: String, required: true },
-    },
-  ])
-  subcategoria: { id: Types.ObjectId; name: string }[];
+  @Prop([{ type: Types.ObjectId, ref: 'Subcategoria' }])
+  subcategorias: Types.ObjectId[];
 
   @Prop({ type: String, required: false })
   image?: string;
@@ -22,4 +16,11 @@ export class Categoria extends Document {
   users: Types.ObjectId[];
 }
 
+@Schema({ timestamps: true })
+export class Subcategoria extends Document {
+  @Prop({ required: true })
+  name: string;
+}
+
 export const CategoriaSchema = SchemaFactory.createForClass(Categoria);
+

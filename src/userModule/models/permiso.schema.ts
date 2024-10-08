@@ -12,6 +12,9 @@ export class Permission extends Document {
 	@Prop([{type: Types.ObjectId, ref: 'user'}])
 	user: Types.ObjectId[];
 
+	@Prop({type: Boolean, default: false})
+	is_default: boolean;
+
 	// Método estático para verificar métodos protegidos
 	static isProtected(method: string): boolean {
 		const protectedMethods = ['get', 'post', 'put', 'delete', 'createBatch', 'updateBatch'];

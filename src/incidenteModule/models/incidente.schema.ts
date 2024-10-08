@@ -25,7 +25,7 @@ export class Incidente extends Document {
   @Prop({ type: String, required: true })
   description: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Categoria.subcategoria', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'subcategoria', required: true })
   subcategoria: Types.ObjectId;
 
   @Prop([
@@ -46,3 +46,12 @@ export class Incidente extends Document {
 }
 
 export const IncidenteSchema = SchemaFactory.createForClass(Incidente);
+
+// Middleware para limitar la cantidad de respuestas
+IncidenteSchema.pre('save', function (next) {
+  if (this.respuesta.length > 1) {
+    const error = new Error('Solo se permite una respuesta por incidente');
+    return next(error);
+  }
+  next();
+});

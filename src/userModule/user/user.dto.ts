@@ -51,6 +51,7 @@ export class CreateUserDto {
   /**
    * Rol del usuario (referencia al ID de rol).
    */
+  @IsOptional()
   @IsString()
   role: string; // Cambia el tipo según tu esquema de rol
 
@@ -74,16 +75,14 @@ export class CreateUserDto {
    */
   verificationCode?: string;
 
-  /**
-   * Contraseña temporal del usuario (opcional).
-   */
-  password_temp?: string;
 }
 
 /**
  * DTO para actualizar un usuario existente.
  */
 export class UpdateUserDto {
+  @IsMongoId()
+  id: string;
   /**
    * Nombre del usuario (opcional).
    */
