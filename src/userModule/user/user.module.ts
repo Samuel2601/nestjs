@@ -6,9 +6,10 @@ import {UserController} from './user.controller';
 import {User, UserSchema} from 'src/userModule/models/user.schema';
 import {RoleUser, RoleUserSchema} from 'src/userModule/models/roleuser.schema';
 import {Permission, PermissionSchema} from '../models/permiso.schema';
-import { RoleModule } from '../role/role.module';
-import { NotificationsModule } from 'src/socket.io/notifications.module';
-import { CriterioModule } from 'src/common/dto/params&populate/criterioFormat.module';
+import {RoleModule} from '../role/role.module';
+import {NotificationsModule} from 'src/socket.io/notifications.module';
+import {CriterioModule} from 'src/common/dto/params&populate/criterioFormat.module';
+import { EmailModuleModule } from 'src/common/emailModule/emailModule.module';
 
 @Module({
 	imports: [
@@ -22,7 +23,8 @@ import { CriterioModule } from 'src/common/dto/params&populate/criterioFormat.mo
 		]),
 		RoleModule,
 		NotificationsModule,
-		CriterioModule
+		CriterioModule,
+		EmailModuleModule,
 	],
 	providers: [UserService],
 	controllers: [UserController],

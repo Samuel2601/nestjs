@@ -3,15 +3,15 @@ import {Document, Types} from 'mongoose';
 import {RoleUser} from './roleuser.schema';
 
 // Subdocumento para redes sociales
-class SocialNetwork {
-	@Prop({required: true})
-	provider: string; // Ejemplo: 'google', 'facebook', 'github'
+export class SocialNetwork { // Cambié aquí para exportarlo
+    @Prop({ required: true })
+    provider: string; // Ejemplo: 'google', 'facebook', 'github'
 
-	@Prop({required: true})
-	providerId: string; // ID del usuario en el proveedor
+    @Prop({ required: true })
+    providerId: string; // ID del usuario en el proveedor
 
-	@Prop({default: null})
-	profileUrl?: string; // URL de perfil del usuario en esa red social
+    @Prop({ default: null })
+    profileUrl?: string; // URL de perfil del usuario en esa red social
 }
 
 @Schema({timestamps: true})

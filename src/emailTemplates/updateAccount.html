@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualización de Información</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #555;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hola {{userName}},</h1>
+        <p>Te informamos que tu información ha sido actualizada exitosamente.</p>
+        
+        <ul>
+            {{#if updatedFields.name}}
+                <li><strong>Nombre:</strong> {{updatedFields.name}}</li>
+            {{/if}}
+            {{#if updatedFields.email}}
+                <li><strong>Email:</strong> {{updatedFields.email}}</li>
+            {{/if}}
+            {{#if updatedFields.phone}}
+                <li><strong>Teléfono:</strong> {{updatedFields.phone}}</li>
+            {{/if}}
+            {{#if updatedFields.password}}
+                <li><strong>Contraseña:</strong> Se ha cambiado, pero no se puede mostrar por razones de seguridad.</li>
+            {{/if}}
+        </ul>
+
+        <p>Si no realizaste esta actualización, por favor contáctanos inmediatamente.</p>
+
+        <div class="footer">
+            <p>Gracias,</p>
+            <p>El equipo de soporte</p>
+        </div>
+    </div>
+</body>
+</html>

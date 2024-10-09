@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import nodemailer from 'nodemailer';
-import fs from 'fs';
-import handlebars from 'handlebars';
-
+import * as nodemailer from 'nodemailer'; // Usa * para importar todo el módulo de nodemailer
+import * as fs from 'fs'; // Asegúrate de usar la forma correcta para importar módulos nativos de Node.js
+import * as handlebars from 'handlebars';
 
 @Injectable()
 export class EmailModuleService {
- private transporter;
+  private transporter: nodemailer.Transporter; // Usa el tipo correcto para el transporter
 
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -45,7 +44,7 @@ export class EmailModuleService {
 
   private readHTMLFile(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      fs.readFile(filePath, { encoding: "utf-8" }, (err, html) => {
+      fs.readFile(filePath, { encoding: 'utf-8' }, (err, html) => {
         if (err) {
           return reject(err);
         }
