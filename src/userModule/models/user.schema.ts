@@ -1,6 +1,18 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
-import {Document} from 'mongoose';
-import {Types} from 'mongoose';
+import {Document, Types} from 'mongoose';
+import {RoleUser} from './roleuser.schema';
+
+// Subdocumento para redes sociales
+class SocialNetwork {
+	@Prop({required: true})
+	provider: string; // Ejemplo: 'google', 'facebook', 'github'
+
+	@Prop({required: true})
+	providerId: string; // ID del usuario en el proveedor
+
+	@Prop({default: null})
+	profileUrl?: string; // URL de perfil del usuario en esa red social
+}
 
 @Schema({timestamps: true})
 export class User extends Document {
@@ -18,7 +30,7 @@ export class User extends Document {
 	dni?: string;
 
 	@Prop({description: 'Telf User Module'})
-	telf?: string;
+	phone?: string;
 
 	@Prop({
 		required: true,
@@ -31,7 +43,7 @@ export class User extends Document {
 	email: string;
 
 	@Prop({
-		description: 'Password no require for User Module [Facebook, Google]',
+		description: 'Password no required for User Module [Facebook, Google]',
 	})
 	password?: string;
 
@@ -41,14 +53,11 @@ export class User extends Document {
 	@Prop({default: true, required: true})
 	status: boolean;
 
-	@Prop({type: Types.ObjectId, ref: 'role', required: true})
+	@Prop({type: Types.ObjectId, ref: RoleUser.modelName, required: true})
 	role: Types.ObjectId;
 
-	@Prop({default: null})
-	googleId?: string;
-
-	@Prop({default: null})
-	facebookId?: string;
+	@Prop({type: [SocialNetwork], default: []})
+	redes: SocialNetwork[]; // Array de redes sociales
 
 	@Prop({default: null})
 	photo?: string;
@@ -64,16 +73,11 @@ export class User extends Document {
 
 	// Método estático para verificar métodos protegidos
 	static isProtected(method: string): boolean {
-		const protectedMethods = [
-			'get',
-			//"post",
-			'put',
-			'delete',
-			'createBatch',
-			'updateBatch',
-		];
+		const protectedMethods = ['get', 'put', 'delete', 'createBatch', 'updateBatch'];
 		return protectedMethods.includes(method);
 	}
+	// Nombre del modelo que puedes reutilizar
+	static modelName = 'User';
 }
 
 // Crear el esquema usando SchemaFactory

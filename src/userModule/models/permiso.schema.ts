@@ -9,8 +9,8 @@ export class Permission extends Document {
 	@Prop({required: true, lowercase: true, trim: true})
 	method: string;
 
-	@Prop([{type: Types.ObjectId, ref: 'user'}])
-	user: Types.ObjectId[];
+	@Prop([{type: Types.ObjectId, ref: 'User'}])
+	users: Types.ObjectId[];
 
 	@Prop({type: Boolean, default: false})
 	is_default: boolean;
@@ -20,6 +20,8 @@ export class Permission extends Document {
 		const protectedMethods = ['get', 'post', 'put', 'delete', 'createBatch', 'updateBatch'];
 		return protectedMethods.includes(method);
 	}
+	// Nombre del modelo que puedes reutilizar
+	static modelName = 'Permission';
 }
 
 // Índice compuesto para asegurar que la combinación de name y method sea única

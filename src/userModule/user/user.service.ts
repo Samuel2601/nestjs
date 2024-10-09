@@ -76,9 +76,13 @@ export class UserService {
 	 * Devuelve una lista de todos los usuarios en la base de datos.
 	 * @returns Promesa que resuelve con una lista de usuarios.
 	 */
-	async findAll(): Promise<any> {
+	async findAllfilter(params, populateFields = []): Promise<any> {
 		try {
-			const data = await this.userModel.find().populate('role').exec();
+			let query = this.userModel.find(params).sort({createdAt: -1});
+			populateFields.forEach((field) => {
+				query = query.populate(field);
+			});
+			const data = await query.exec();
 			return apiResponse(200, 'Usuarios obtenidos con éxito.', data, null);
 		} catch (error) {
 			console.error(error);
@@ -165,18 +169,18 @@ export class UserService {
 
 		for (const dtoUser of updateUsersDto) {
 			try {
-				const user = await this.userModel.findByIdAndUpdate(dtoUser.id, dtoUser, {new: true});
+				const user = await this.userModel.findByIdAndUpdate(dtoUser._id, dtoUser, {new: true});
 				if (!user) {
 					errors.push({
-						id: dtoUser.id,
-						message: `Usuario con ID ${dtoUser.id} no encontrado`,
+						id: dtoUser._id,
+						message: `Usuario con ID ${dtoUser._id} no encontrado`,
 					});
 					continue; // Si no se encuentra el usuario, continuar con el siguiente
 				}
 				updatedUsers.push(user);
 			} catch (error) {
 				errors.push({
-					id: dtoUser.id,
+					id: dtoUser._id,
 					message: error.message,
 				});
 			}

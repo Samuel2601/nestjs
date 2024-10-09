@@ -2,22 +2,40 @@ import {Injectable} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
 import {Model} from 'mongoose';
 import {apiResponse} from 'src/common/helpers/apiResponse';
-import {CriterioService} from 'src/common/dto/params&populate/criterioFormat.service';
 import {NotificationsService} from 'src/socket.io/notifications.service';
 import {RoleUser} from 'src/userModule/models/roleuser.schema';
 import {User} from 'src/userModule/models/user.schema';
-import {getPopulateFields} from 'src/common/dto/utils';
+import {Permission} from '../models/permiso.schema';
+import {CreateRoleUserDto, UpdateRoleUserDto} from './role.dto';
 
 @Injectable()
 export class RoleService {
 	constructor(
 		@InjectModel(RoleUser.name) private roleModel: Model<RoleUser>,
 		@InjectModel(User.name) private userModel: Model<User>,
-		private params_populate: CriterioService,
+		@InjectModel(Permission.name) private permissModel: Model<Permission>,
 		private notific: NotificationsService,
 	) {}
 
-	async obtenerRole(id: string) {
+	/**
+	 * Devuelve una lista de todos los usuarios en la base de datos.
+	 * @returns Promesa que resuelve con una lista de usuarios.
+	 */
+	async findAllfilter(params, populateFields = []): Promise<any> {
+		try {
+			let query = this.roleModel.find(params).sort({createdAt: -1});
+			populateFields.forEach((field) => {
+				query = query.populate(field);
+			});
+			const data = await query.exec();
+			return apiResponse(200, 'Roles obtenidos con éxito.', data, null);
+		} catch (error) {
+			console.error(error);
+			return apiResponse(500, 'ERROR', null, error);
+		}
+	}
+
+	async findById(id: string): Promise<any> {
 		try {
 			const role = await this.roleModel.findById(id).populate('permisos');
 			if (!role) {
@@ -30,25 +48,7 @@ export class RoleService {
 		}
 	}
 
-	async obtenerRolesPorCriterio(params, userPopulateFields = []) {
-		try {
-			const {populate, ...filterParams} = params;
-			const aux = {...filterParams};
-			const filter = this.params_populate.criterioFormat(this.roleModel, aux);
-			const populateFields = getPopulateFields(this.roleModel, userPopulateFields);
-			let query = this.roleModel.find(filter).sort({createdAt: -1});
-			populateFields.forEach((field) => {
-				query = query.populate(field);
-			});
-			const data = await query.exec();
-			return apiResponse(200, null, data.length > 0 ? data : [], null);
-		} catch (error) {
-			console.error(error);
-			return apiResponse(500, 'ERROR', null, error);
-		}
-	}
-
-	async actualizarRole(id: string, data) {
+	async actualizarRole(id: string, data): Promise<any> {
 		try {
 			const rolActual = await this.roleModel.findById(id).populate('permisos');
 			if (!rolActual) {
@@ -86,7 +86,7 @@ export class RoleService {
 		}
 	}
 
-	async eliminarRole(id: string) {
+	async eliminarRole(id: string): Promise<any> {
 		try {
 			const role = await this.roleModel.findByIdAndDelete(id);
 			if (!role) {
@@ -99,27 +99,73 @@ export class RoleService {
 		}
 	}
 
-	async registrarRolesMasivo(datos, update: string) {
-		try {
-			const roles = await this.roleModel.insertMany(datos, {ordered: false});
-			return apiResponse(201, 'Roles creados con éxito.', roles, null);
-		} catch (error) {
-			console.error(error);
-			if (error.name === 'BulkWriteError' && update === 'true') {
-				const rolesConErrores = error.writeErrors.map((e) => datos[e.index]);
-				const resp = await this.actualizarRoles(rolesConErrores);
-				if (resp.status === 200) {
-					return apiResponse(200, 'Roles creados y actualizados con éxito.', null, null);
+	async createBatch(CreateRoleUserDto: CreateRoleUserDto[]) {
+		const createdUsers = [];
+		const errors = [];
+
+		for (const userDto of CreateRoleUserDto) {
+			try {
+				const createdUser = await this.roleModel.create(userDto);
+				createdUsers.push(createdUser);
+			} catch (error) {
+				// Aquí puedes filtrar o registrar el error según necesites
+				if (error.code === 11000) {
+					// 11000 es el código de error para duplicados
+					errors.push({
+						user: userDto,
+						message: 'Usuario ya existente',
+					});
 				} else {
-					return apiResponse(500, 'ERROR', null, resp.error);
+					// Manejar otros tipos de errores si es necesario
+					errors.push({
+						user: userDto,
+						message: error.message,
+					});
 				}
 			}
-			return apiResponse(500, 'ERROR', null, error);
 		}
+
+		return apiResponse(
+			errors.length > 0 ? 207 : 201,
+			errors.length > 0 ? 'Hubieron algunos errores al crear los usuarios.' : 'Creación de usuarios exitosa.',
+			createdUsers,
+			errors,
+		);
+	}
+
+	async updateBatch(updateUsersDto: UpdateRoleUserDto[]): Promise<any> {
+		const updatedUsers: User[] = [];
+		const errors = [];
+
+		for (const dtoUser of updateUsersDto) {
+			try {
+				const user = await this.userModel.findByIdAndUpdate(dtoUser._id, dtoUser, {new: true});
+				if (!user) {
+					errors.push({
+						id: dtoUser._id,
+						message: `Usuario con ID ${dtoUser._id} no encontrado`,
+					});
+					continue; // Si no se encuentra el usuario, continuar con el siguiente
+				}
+				updatedUsers.push(user);
+			} catch (error) {
+				errors.push({
+					id: dtoUser._id,
+					message: error.message,
+				});
+			}
+		}
+
+		return apiResponse(
+			errors.length > 0 ? 207 : 200, // 207 para "Multi-Status" si hay errores, 200 si todo fue exitoso
+			errors.length > 0 ? 'Algunos usuarios no pudieron ser actualizados.' : 'Actualización de usuarios exitosa.',
+			updatedUsers,
+			errors,
+		);
 	}
 
 	// Método auxiliar para actualizar roles
-	private async actualizarRoles(rolesConErrores) {
+	private async actualizarRoles(rolesConErrores): Promise<any> {
 		try {
 			const rolesActualizados = [];
 			for (const rol of rolesConErrores) {

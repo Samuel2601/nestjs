@@ -1,12 +1,13 @@
 import {Schema, Prop, SchemaFactory} from '@nestjs/mongoose';
 import {Document, Types, Model} from 'mongoose';
+import { Permission } from './permiso.schema';
 
 @Schema({timestamps: true})
 export class RoleUser extends Document {
 	@Prop({required: true, unique: true})
 	name: string;
 
-	@Prop([{type: Types.ObjectId, ref: 'Permission'}])
+	@Prop([{type: Types.ObjectId, ref: Permission.modelName}])
 	permisos: Types.ObjectId[];
 
 	@Prop({type: Boolean, default: false})
@@ -17,6 +18,8 @@ export class RoleUser extends Document {
 		const protectedMethods = ['get', 'post', 'put', 'delete', 'createBatch', 'updateBatch'];
 		return protectedMethods.includes(method);
 	}
+	// Nombre del modelo que puedes reutilizar
+  	static modelName = 'RoleUser';
 }
 
 export const RoleUserSchema = SchemaFactory.createForClass(RoleUser);

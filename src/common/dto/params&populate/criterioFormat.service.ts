@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, Query} from '@nestjs/common';
 
 @Injectable()
 export class CriterioService {
@@ -49,5 +49,25 @@ export class CriterioService {
 			}
 		}
 		return filter;
+	}
+
+	getfilterPopulate(@Query() query) {
+		// Separar los filtros y los campos de populate
+		const filter = {};
+		const populateFields = [];
+
+		for (const [key, value] of Object.entries(query)) {
+			if (key.startsWith('filter_')) {
+				// Extraer el nombre del filtro
+				const filterKey = key.replace('filter_', '');
+				filter[filterKey] = value; // Asumimos que `value` está ya en el formato adecuado
+			} else if (key.startsWith('populate_')) {
+				// Extraer el nombre del campo para populate
+				const populateKey = key.replace('populate_', '');
+				populateFields.push(populateKey);
+			}
+		}
+
+		return {filter, populateFields};
 	}
 }

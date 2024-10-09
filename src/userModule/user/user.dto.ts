@@ -82,7 +82,7 @@ export class CreateUserDto {
  */
 export class UpdateUserDto {
   @IsMongoId()
-  id: string;
+  _id: string;
   /**
    * Nombre del usuario (opcional).
    */
