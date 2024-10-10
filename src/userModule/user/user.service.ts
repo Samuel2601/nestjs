@@ -25,6 +25,43 @@ export class UserService {
 	) {}
 
 	/**
+	 * Devuelve una lista de todos los usuarios en la base de datos.
+	 * @returns Promesa que resuelve con una lista de usuarios.
+	 */
+	async findAllfilter(params, populateFields = []): Promise<any> {
+		try {
+			let query = this.userModel.find(params).sort({createdAt: -1});
+			populateFields.forEach((field) => {
+				query = query.populate(field);
+			});
+			const data = await query.exec();
+			return apiResponse(200, 'Usuarios obtenidos con éxito.', data, null);
+		} catch (error) {
+			console.error(error);
+			return apiResponse(500, 'ERROR', null, error);
+		}
+	}
+
+	/**
+	 * Encuentra un usuario por su ID.
+	 * @param id ID del usuario a buscar.
+	 * @returns Promesa que resuelve con el usuario encontrado o null si no existe.
+	 */
+	async findById(id: string): Promise<any> {
+		try {
+			const user = await this.userModel.findById(id).populate(this.rolModel.baseModelName).exec();
+			if (!user) {
+				//throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+				return apiResponse(404, 'Usuario no encontrado', null, null);
+			}
+			return apiResponse(200, 'Usuario obtenido con éxito.', user, null);
+		} catch (error) {
+			console.error(error);
+			return apiResponse(500, 'ERROR', null, error);
+		}
+	}
+
+	/**
 	 * Crea un nuevo usuario en la base de datos.
 	 * La contraseña se cifra utilizando bcrypt.
 	 * @param data DTO que contiene los datos para crear un nuevo usuario.
@@ -63,43 +100,6 @@ export class UserService {
 	}
 
 	/**
-	 * Encuentra un usuario por su ID.
-	 * @param id ID del usuario a buscar.
-	 * @returns Promesa que resuelve con el usuario encontrado o null si no existe.
-	 */
-	async findById(id: string): Promise<any> {
-		try {
-			const user = await this.userModel.findById(id).populate('role').exec();
-			if (!user) {
-				//throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
-				return apiResponse(404, 'Usuario no encontrado', null, null);
-			}
-			return apiResponse(200, 'Usuario obtenido con éxito.', user, null);
-		} catch (error) {
-			console.error(error);
-			return apiResponse(500, 'ERROR', null, error);
-		}
-	}
-
-	/**
-	 * Devuelve una lista de todos los usuarios en la base de datos.
-	 * @returns Promesa que resuelve con una lista de usuarios.
-	 */
-	async findAllfilter(params, populateFields = []): Promise<any> {
-		try {
-			let query = this.userModel.find(params).sort({createdAt: -1});
-			populateFields.forEach((field) => {
-				query = query.populate(field);
-			});
-			const data = await query.exec();
-			return apiResponse(200, 'Usuarios obtenidos con éxito.', data, null);
-		} catch (error) {
-			console.error(error);
-			return apiResponse(500, 'ERROR', null, error);
-		}
-	}
-
-	/**
 	 * Actualiza un usuario por su ID.
 	 * @param id ID del usuario a actualizar.
 	 * @param updateUserDto DTO con los datos de actualización.
@@ -107,12 +107,12 @@ export class UserService {
 	 */
 	async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<any> {
 		try {
-			const user = await this.userModel.findById(id).populate('role');
+			const user = await this.userModel.findById(id).populate(this.rolModel.baseModelName);
 			if (!user) {
 				//throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
 				return apiResponse(404, 'Usuario no encontrado', null, null);
 			}
-			const updateuser = await this.userModel.findByIdAndUpdate(id, updateUserDto, {new: true}).populate('role');
+			const updateuser = await this.userModel.findByIdAndUpdate(id, updateUserDto, {new: true}).populate(this.rolModel.baseModelName);
 			if (user.role == updateuser.role) {
 				this.emailModuleService.sendNotification(user.email, 'Actualización de Información', 'src/emailTemplates/updateAccount.html', {
 					userName: updateuser.name,

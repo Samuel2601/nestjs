@@ -17,14 +17,14 @@ export class RoleController {
 		private readonly criterioService: CriterioService,
 	) {}
 
-	@Get(':id')
+	@Get('/:id')
 	@UsePipes(new ValidationPipe({transform: true}))
-	async findById(@Param() params: FindUserByIdDto) {
-		return this.rolesService.findById(params.id);
+	async findById(@Param() params: FindUserByIdDto): Promise<any> {
+		return await this.rolesService.findById(params.id);
 	}
 
 	@Get()
-	async findAllfilter(@Query() query) {
+	async getAllRoltefilter(@Query() query): Promise<any> {
 		// Obtener los filtros y los campos de populate
 		const {filter, populateFields} = this.criterioService.getfilterPopulate(query);
 		// Formatear los filtros
@@ -33,25 +33,25 @@ export class RoleController {
 		return this.rolesService.findAllfilter(filterparse, populateFieldsparse);
 	}
 
-	@Put(':id')
+	@Put('/:id')
 	@UsePipes(new ValidationPipe({transform: true}))
-	async actualizarRole(@Param() params: FindUserByIdDto, @Body() rolDto: Dto.UpdateRoleUserDto) {
-		return this.rolesService.actualizarRole(params.id, rolDto);
+	async updateRole(@Param() params: FindUserByIdDto, @Body() rolDto: Dto.UpdateRoleUserDto): Promise<any> {
+		return this.rolesService.updateRole(params.id, rolDto);
 	}
 
-	@Delete(':id')
+	@Delete('/:id')
 	@UsePipes(new ValidationPipe({transform: true}))
-	async eliminarRole(@Param() params: FindUserByIdDto) {
-		return this.rolesService.eliminarRole(params.id);
+	async deleteRole(@Param() params: FindUserByIdDto): Promise<any> {
+		return this.rolesService.deleteRole(params.id);
 	}
 
-	@Post('')
+	@Post('batch')
 	@UsePipes(new ValidationPipe({transform: true}))
-	async registrarRolesMasivo(@Body() rolDto: Dto.CreateRoleUserDto[]) {
+	async createBatch(@Body() rolDto: Dto.CreateRoleUserDto[]): Promise<any> {
 		return this.rolesService.createBatch(rolDto);
-  }
-  
-  @Put('batch')
+	}
+
+	@Put('batch')
 	@UsePipes(new ValidationPipe({transform: true}))
 	async updateBatch(@Body() updateRoleUserDto: Dto.UpdateRoleUserDto[]): Promise<any> {
 		return await this.rolesService.updateBatch(updateRoleUserDto);

@@ -1,4 +1,5 @@
 import {IsNotEmpty, IsString, IsBoolean, IsOptional, IsArray, IsMongoId} from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateRoleUserDto {
 	@IsNotEmpty()
@@ -8,7 +9,7 @@ export class CreateRoleUserDto {
 	@IsOptional()
 	@IsArray()
 	@IsMongoId({each: true})
-	readonly permisos?: string[]; // Los IDs de permisos deben ser ObjectId
+	readonly permisos?: Types.ObjectId[]; // Los IDs de permisos deben ser ObjectId
 
 	@IsOptional()
 	@IsBoolean()
@@ -25,7 +26,7 @@ export class UpdateRoleUserDto {
 	@IsOptional()
 	@IsArray()
 	@IsMongoId({each: true})
-	readonly permisos?: string[]; // Actualización opcional de permisos
+	readonly permisos?: Types.ObjectId[]; // Actualización opcional de permisos
 
 	@IsOptional()
 	@IsBoolean()

@@ -2,10 +2,10 @@ import {Body, Query, Controller, Delete, Request, Get, Param, Post, NotFoundExce
 import {UserService} from './user.service';
 import {CreateUserDto, UpdateUserDto} from './user.dto';
 import {FindUserByIdDto} from 'src/common/dto/id.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from '../models/user.schema';
-import { CriterioService } from 'src/common/dto/params&populate/criterioFormat.service';
-import { Model } from 'mongoose';
+import {InjectModel} from '@nestjs/mongoose';
+import {User} from '../models/user.schema';
+import {CriterioService} from 'src/common/dto/params&populate/criterioFormat.service';
+import {Model} from 'mongoose';
 
 @Controller('/users')
 export class UserController {
@@ -14,6 +14,13 @@ export class UserController {
 		@InjectModel(User.name) private roleModel: Model<User>,
 		private readonly criterioService: CriterioService,
 	) {}
+
+	// Obtener un usuario por su ID (GET /users/:id)
+	@Get('/:id')
+	@UsePipes(new ValidationPipe({transform: true}))
+	async findById(@Param() params: FindUserByIdDto): Promise<any> {
+		return await this.usersService.findById(params.id);
+	}
 
 	// Obtener todos los usuarios (GET /users)
 	@Get()
@@ -25,13 +32,6 @@ export class UserController {
 		const populateFieldsparse = this.criterioService.getPopulateFields(this.roleModel, populateFields); // Obtener los campos de populate
 
 		return this.usersService.findAllfilter(filterparse, populateFieldsparse);
-	}
-
-	// Obtener un usuario por su ID (GET /users/:id)
-	@Get('/:id')
-	@UsePipes(new ValidationPipe({transform: true}))
-	async findById(@Param() params: FindUserByIdDto): Promise<any> {
-		return await this.usersService.findById(params.id);
 	}
 
 	// Crear un nuevo usuario (POST /users)

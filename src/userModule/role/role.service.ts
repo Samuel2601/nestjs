@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
-import {Model} from 'mongoose';
+import {Model, Types} from 'mongoose';
 import {apiResponse} from 'src/common/helpers/apiResponse';
 import {NotificationsService} from 'src/socket.io/notifications.service';
 import {RoleUser} from 'src/userModule/models/roleuser.schema';
@@ -37,7 +37,7 @@ export class RoleService {
 
 	async findById(id: string): Promise<any> {
 		try {
-			const role = await this.roleModel.findById(id).populate('permisos');
+			const role = await this.roleModel.findById(id).populate(this.permissModel.baseModelName);
 			if (!role) {
 				return apiResponse(404, 'Rol no encontrado.', null, null);
 			}
@@ -48,16 +48,51 @@ export class RoleService {
 		}
 	}
 
-	async actualizarRole(id: string, data): Promise<any> {
+	async createRole(createRoleDto: CreateRoleUserDto): Promise<any> {
+		const {name, permisos} = createRoleDto;
+
+		// Verifica si ya existe un rol con el mismo nombre
+		const existingRole = await this.roleModel.findOne({name});
+		if (existingRole) {
+			return apiResponse(400, 'Ya existe un rol con ese nombre', null, null);
+		}
+
+		let assignedPermissions: Types.ObjectId[];
+
+		if (permisos && permisos.length > 0) {
+			// Si se proporcionan permisos, se asignan esos permisos
+			assignedPermissions = permisos;
+		} else {
+			// Si no se proporcionan permisos, busca los permisos predeterminados (is_default: true)
+			const defaultPermissions: Permission[] = await this.permissModel.find({is_default: true});
+
+			/*if (!defaultPermissions || defaultPermissions.length === 0) {
+				return apiResponse(400, 'No se encontraron permisos predeterminados', null, null);
+			}*/
+
+			// Extrae los IDs de los permisos predeterminados
+			assignedPermissions = defaultPermissions.map((defaultPermission: Permission) => defaultPermission._id as Types.ObjectId);
+		}
+
+		// Crea el nuevo rol con los permisos asignados
+		const newRole = new this.roleModel({
+			name,
+			permisos: assignedPermissions,
+		});
+
+		return newRole.save();
+	}
+
+	async updateRole(id: string, data: UpdateRoleUserDto): Promise<any> {
 		try {
-			const rolActual = await this.roleModel.findById(id).populate('permisos');
+			const rolActual = await this.roleModel.findById(id).populate(this.permissModel.baseModelName);
 			if (!rolActual) {
 				return apiResponse(404, 'Rol no encontrado.', null, null);
 			}
 
 			const permisosActuales = rolActual.permisos.map((permiso) => permiso._id.toString());
 
-			const rolActualizado = await this.roleModel.findByIdAndUpdate(id, data, {new: true}).populate('permisos');
+			const rolActualizado = await this.roleModel.findByIdAndUpdate(id, data, {new: true}).populate(this.permissModel.baseModelName);
 
 			if (!rolActualizado) {
 				return apiResponse(404, 'Rol no encontrado.', null, null);
@@ -86,7 +121,7 @@ export class RoleService {
 		}
 	}
 
-	async eliminarRole(id: string): Promise<any> {
+	async deleteRole(id: string): Promise<any> {
 		try {
 			const role = await this.roleModel.findByIdAndDelete(id);
 			if (!role) {
@@ -162,24 +197,6 @@ export class RoleService {
 			updatedUsers,
 			errors,
 		);
-	}
-
-	// Método auxiliar para actualizar roles
-	private async actualizarRoles(rolesConErrores): Promise<any> {
-		try {
-			const rolesActualizados = [];
-			for (const rol of rolesConErrores) {
-				const resultado = await this.roleModel.updateOne({_id: rol._id}, rol);
-				rolesActualizados.push(resultado);
-			}
-			if (rolesActualizados.length === 0) {
-				return apiResponse(404, 'Ningún rol encontrado para actualizar.', null, null);
-			}
-			return apiResponse(200, 'Roles actualizados con éxito.', rolesActualizados, null);
-		} catch (error) {
-			console.error(error);
-			return apiResponse(500, 'ERROR', null, error);
-		}
 	}
 
 	async getDefaultRole(): Promise<RoleUser | null> {
