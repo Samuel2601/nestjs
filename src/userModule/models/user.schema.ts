@@ -62,7 +62,7 @@ export class User extends Document {
 	@Prop({default: null})
 	photo?: string;
 
-	@Prop()
+	@Prop({default: null})
 	verificationCode?: string;
 
 	@Prop({default: Date.now, required: true})

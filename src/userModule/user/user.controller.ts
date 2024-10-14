@@ -1,4 +1,20 @@
-import {Body, Query, Controller, Delete, Request, Get, Param, Post, NotFoundException, UnauthorizedException, Put, UsePipes, ValidationPipe} from '@nestjs/common';
+import {
+	Body,
+	Query,
+	Controller,
+	Delete,
+	Request,
+	Get,
+	Param,
+	Post,
+	NotFoundException,
+	UnauthorizedException,
+	Put,
+	UsePipes,
+	ValidationPipe,
+	UseInterceptors,
+	UploadedFile,
+} from '@nestjs/common';
 import {UserService} from './user.service';
 import {CreateUserDto, UpdateUserDto} from './user.dto';
 import {FindUserByIdDto} from 'src/common/dto/id.dto';
@@ -6,6 +22,8 @@ import {InjectModel} from '@nestjs/mongoose';
 import {User} from '../models/user.schema';
 import {CriterioService} from 'src/common/dto/params&populate/criterioFormat.service';
 import {Model} from 'mongoose';
+import {FileInterceptor} from '@nestjs/platform-express';
+import {UploadsService} from 'src/common/uploads/uploads.service';
 
 @Controller('/users')
 export class UserController {
@@ -37,7 +55,11 @@ export class UserController {
 	// Crear un nuevo usuario (POST /users)
 	@Post()
 	@UsePipes(new ValidationPipe({transform: true}))
-	async createUser(@Body() userDto: CreateUserDto): Promise<any> {
+	@UseInterceptors(FileInterceptor('photo', UploadsService.configureMulter(5 * 1024 * 1024, 'users')))
+	async createUser(@Body() userDto: CreateUserDto, @UploadedFile() file: Express.Multer.File): Promise<any> {
+		if (file) {
+			userDto.photo = file.filename;
+		}
 		return await this.usersService.createUser(userDto);
 	}
 

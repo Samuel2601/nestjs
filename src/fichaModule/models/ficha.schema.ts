@@ -1,9 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document, Number, Types } from 'mongoose';
+import { User } from 'src/userModule/models/user.schema';
+import { Actividad } from './actividad.schema';
+
 
 @Schema({ timestamps: true })
 export class Ficha extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   owner: Types.ObjectId;
 
   @Prop({
@@ -18,7 +21,7 @@ export class Ficha extends Document {
   @Prop({ required: true, trim: true })
   description: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Actividad', required: true })
+  @Prop({ type: Types.ObjectId, ref: Actividad.name, required: true })
   actividad: Types.ObjectId;
 
   @Prop({ default: false })
@@ -46,16 +49,16 @@ export class Ficha extends Document {
   @Prop({ type: String })
   marcador?: string;
 
-  @Prop({ type: Boolean, default: false })
-  share: boolean;
+  @Prop({ type: Number, default: 0 })
+  share: Number;
 
-  @Prop([{ type: Types.ObjectId, ref: 'User' }])
+  @Prop([{ type: Types.ObjectId, ref: User.name }])
   likes: Types.ObjectId[];
 
   @Prop([
     {
       _id: false,
-      owner: { type: Types.ObjectId, ref: 'User' },
+      owner: { type: Types.ObjectId, ref: User.name },
       date: { type: Date, default: Date.now },
       puntaje: { type: Number },
     },

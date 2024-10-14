@@ -1,9 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { User } from 'src/userModule/models/user.schema';
+import { Subcategoria } from './categoria.schema';
 
 @Schema({ timestamps: true })
 export class Incidente extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   owner: Types.ObjectId;
 
   @Prop({
@@ -25,13 +27,13 @@ export class Incidente extends Document {
   @Prop({ type: String, required: true })
   description: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'subcategoria', required: true })
+  @Prop({ type: Types.ObjectId, ref: Subcategoria.name, required: true })
   subcategoria: Types.ObjectId;
 
   @Prop([
     {
       _id: false,
-      owner_resp: { type: Types.ObjectId, ref: 'User' },
+      owner_resp: { type: Types.ObjectId, ref: User.name },
       description_resp: { type: String },
       observacion: { type: String },
       images: [String],
@@ -46,12 +48,3 @@ export class Incidente extends Document {
 }
 
 export const IncidenteSchema = SchemaFactory.createForClass(Incidente);
-
-// Middleware para limitar la cantidad de respuestas
-IncidenteSchema.pre('save', function (next) {
-  if (this.respuesta.length > 1) {
-    const error = new Error('Solo se permite una respuesta por incidente');
-    return next(error);
-  }
-  next();
-});

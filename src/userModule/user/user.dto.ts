@@ -1,190 +1,195 @@
-import { IsString, IsNotEmpty, IsEmail, IsOptional, IsBoolean, IsMongoId, MinLength } from 'class-validator';
+import {IsString, IsNotEmpty, IsEmail, IsOptional, IsBoolean, IsMongoId, MinLength} from 'class-validator';
 
 /**
  * DTO para crear un nuevo usuario.
  */
 export class CreateUserDto {
-  /**
-   * Nombre del usuario.
-   */
-  @IsString()
-  @IsNotEmpty()
-  name: string;
+	/**
+	 * Nombre del usuario.
+	 */
+	@IsString()
+	@IsNotEmpty()
+	name: string;
 
-  /**
-   * Apellido del usuario (opcional).
-   */
-  @IsString()
-  last_name?: string;
+	/**
+	 * Apellido del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	last_name?: string;
 
-  /**
-   * DNI del usuario (opcional).
-   */
-  @IsString()
-  dni?: string;
+	/**
+	 * DNI del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	dni?: string;
 
-  /**
-   * Teléfono del usuario (opcional).
-   */
-  @IsString()
-  telf?: string;
+	/**
+	 * Teléfono del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	phone?: string; // Cambiado de 'telf' a 'phone' para que coincida con el esquema
 
-  /**
-   * Correo electrónico del usuario.
-   */
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
+	/**
+	 * Correo electrónico del usuario.
+	 */
+	@IsEmail()
+	@IsNotEmpty()
+	email: string;
 
-  /**
-   * Contraseña del usuario (opcional).
-   */
-  @IsString()
-  password?: string;
+	/**
+	 * Contraseña del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	@MinLength(6)
+	password?: string;
 
-  /**
-   * Estado del usuario (activo o inactivo).
-   */
-  @IsNotEmpty()
-  status: boolean;
+	/**
+	 * Estado del usuario (activo o inactivo).
+	 */
+	@IsBoolean()
+	@IsOptional()
+	verificado?: boolean; // Agregado tipo booleano para la validación
 
-  /**
-   * Rol del usuario (referencia al ID de rol).
-   */
-  @IsOptional()
-  @IsString()
-  role: string; // Cambia el tipo según tu esquema de rol
+	/**
+	 * Estado del usuario (activo o inactivo).
+	 */
+	@IsBoolean()
+	@IsOptional()
+	status?: boolean; // Agregado tipo booleano para la validación
 
-  /**
-   * ID de Google del usuario (opcional).
-   */
-  googleId?: string;
+	/**
+	 * Rol del usuario (referencia al ID de rol).
+	 */
+	@IsMongoId({message: 'Invalid ID format'})
+	@IsOptional()
+	role: string; // Mantén esto como string, ya que es una referencia a un ObjectId en tu esquema
 
-  /**
-   * ID de Facebook del usuario (opcional).
-   */
-  facebookId?: string;
+	/**
+	 * URL de la foto del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	photo?: string;
 
-  /**
-   * URL de la foto del usuario (opcional).
-   */
-  photo?: string;
-
-  /**
-   * Código de verificación del usuario (opcional).
-   */
-  verificationCode?: string;
-
+	/**
+	 * Redes sociales del usuario (opcional).
+	 */
+	@IsOptional()
+	redes?: {
+		provider: string; // Ejemplo: 'google', 'facebook', 'github'
+		providerId: string; // ID del usuario en el proveedor
+		profileUrl?: string; // URL de perfil del usuario en esa red social
+	}[];
 }
 
 /**
  * DTO para actualizar un usuario existente.
  */
 export class UpdateUserDto {
-  @IsMongoId()
-  _id: string;
-  /**
-   * Nombre del usuario (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  name?: string;
+	@IsMongoId()
+	_id: string;
+	/**
+	 * Nombre del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	name?: string;
 
-  /**
-   * Apellido del usuario (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  last_name?: string;
+	/**
+	 * Apellido del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	last_name?: string;
 
-  /**
-   * DNI del usuario (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  dni?: string;
+	/**
+	 * DNI del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	dni?: string;
 
-  /**
-   * Teléfono del usuario (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  telf?: string;
+	/**
+	 * Teléfono del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	phone?: string;
 
-  /**
-   * Correo electrónico del usuario (opcional).
-   */
-  @IsEmail()
-  @IsOptional()
-  email?: string;
+	/**
+	 * Correo electrónico del usuario (opcional).
+	 */
+	@IsEmail()
+	@IsOptional()
+	email?: string;
 
-  /**
-   * Contraseña del usuario, con al menos 6 caracteres (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  @MinLength(6)
-  password?: string;
+	/**
+	 * Contraseña del usuario, con al menos 6 caracteres (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	@MinLength(6)
+	password?: string;
 
-  /**
-   * Indicador de si el usuario está verificado (opcional).
-   */
-  @IsBoolean()
-  @IsOptional()
-  verificado?: boolean;
+	/**
+	 * Indicador de si el usuario está verificado (opcional).
+	 */
+	@IsBoolean()
+	@IsOptional()
+	verificado?: boolean;
 
-  /**
-   * Estado del usuario (activo o inactivo) (opcional).
-   */
-  @IsBoolean()
-  @IsOptional()
-  status?: boolean;
+	/**
+	 * Estado del usuario (activo o inactivo) (opcional).
+	 */
+	@IsBoolean()
+	@IsOptional()
+	status?: boolean;
 
-  /**
-   * ID del rol asociado al usuario (opcional).
-   */
-  @IsMongoId()
-  @IsOptional()
-  role?: string;
+	/**
+	 * ID del rol asociado al usuario (opcional).
+	 */
+	@IsMongoId()
+	@IsOptional()
+	role?: string;
 
-  /**
-   * ID de Google del usuario (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  googleId?: string;
+	/**
+	 * Redes sociales del usuario (opcional).
+	 */
+	@IsOptional()
+	redes?: {
+		provider: string; // Ejemplo: 'google', 'facebook', 'github'
+		providerId: string; // ID del usuario en el proveedor
+		profileUrl?: string; // URL de perfil del usuario en esa red social
+	}[];
 
-  /**
-   * ID de Facebook del usuario (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  facebookId?: string;
+	/**
+	 * URL de la foto del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	photo?: string;
 
-  /**
-   * URL de la foto del usuario (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  photo?: string;
+	/**
+	 * Código de verificación del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	verificationCode?: string;
 
-  /**
-   * Código de verificación del usuario (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  verificationCode?: string;
+	/**
+	 * Fecha de creación del usuario (opcional).
+	 */
+	@IsOptional()
+	createdAt?: Date;
 
-  /**
-   * Fecha de creación del usuario (opcional).
-   */
-  @IsOptional()
-  createdAt?: Date;
-
-  /**
-   * Contraseña temporal del usuario (opcional).
-   */
-  @IsString()
-  @IsOptional()
-  password_temp?: string;
+	/**
+	 * Contraseña temporal del usuario (opcional).
+	 */
+	@IsString()
+	@IsOptional()
+	password_temp?: string;
 }
