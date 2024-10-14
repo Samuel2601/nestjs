@@ -1,17 +1,18 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
-import {Document, Types} from 'mongoose';
+import {Document, Model, Types} from 'mongoose';
 import {RoleUser} from './roleuser.schema';
 
 // Subdocumento para redes sociales
-export class SocialNetwork { // Cambié aquí para exportarlo
-    @Prop({ required: true })
-    provider: string; // Ejemplo: 'google', 'facebook', 'github'
+export class SocialNetwork {
+	// Cambié aquí para exportarlo
+	@Prop({required: true})
+	provider: string; // Ejemplo: 'google', 'facebook', 'github'
 
-    @Prop({ required: true })
-    providerId: string; // ID del usuario en el proveedor
+	@Prop({required: true})
+	providerId: string; // ID del usuario en el proveedor
 
-    @Prop({ default: null })
-    profileUrl?: string; // URL de perfil del usuario en esa red social
+	@Prop({default: null})
+	profileUrl?: string; // URL de perfil del usuario en esa red social
 }
 
 @Schema({timestamps: true})
@@ -82,3 +83,16 @@ export class User extends Document {
 
 // Crear el esquema usando SchemaFactory
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// Agregar un pre-save para asignar el rol predeterminado si no tiene rol
+UserSchema.pre<User>('save', async function (next) {
+	if (!this.role) {
+		// Si el usuario no tiene rol asignado, buscar el rol predeterminado
+		const RoleUserModel = this.constructor as Model<RoleUser>;
+		const defaultRole = await RoleUserModel.findOne({is_default: true});
+		if (defaultRole) {
+			this.role = defaultRole._id as Types.ObjectId;
+		}
+	}
+	next();
+});
