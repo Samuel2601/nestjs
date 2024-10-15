@@ -26,7 +26,7 @@ interface GooglePayload {
 @Injectable()
 export class AuthService {
 	private googleClient: OAuth2Client;
-	private msalConfig: msal.Configuration;
+	private msalClient: msal.PublicClientApplication;
 
 	constructor(
 		@InjectModel(User.name) private userModel: Model<User>,
@@ -34,13 +34,14 @@ export class AuthService {
 		private httpService: HttpService,
 	) {
 		this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-		this.msalConfig = {
+		this.msalClient = new msal.PublicClientApplication({
 			auth: {
 				clientId: process.env.OUTLOOK_CLIENT_ID,
-				clientSecret: process.env.OUTLOOK_CLIENT_SECRET,
-				authority: 'https://login.microsoftonline.com/common',
+				//clientSecret: process.env.OUTLOOK_CLIENT_SECRET,
+				authority: 'https://login.microsoftonline.com/consumers',
+				//knownAuthorities: ['login.microsoftonline.com'],
 			},
-		};
+		});
 	}
 
 	async validateUser(email: string, password: string): Promise<any> {
@@ -84,7 +85,6 @@ export class AuthService {
 			const signingKey = key.getPublicKey();
 			callback(null, signingKey);
 		});
-
 	}
 
 	async googleOneTapLogin(credential: string) {
@@ -141,41 +141,38 @@ export class AuthService {
 	async generateCodeChallenge(verifier: string) {
 		return cryptoO.createHash('sha256').update(verifier).digest('base64url');
 	}
-
+	codes: string = '';
 	async getOutlookAuthorizationUrl(): Promise<string> {
-		// Ejemplo de uso
 		const codeVerifier = await this.generateCodeVerifier();
-		//console.log('Code Verifier:', codeVerifier); // Debug
+		this.codes = codeVerifier;
 		const codeChallenge = await this.generateCodeChallenge(codeVerifier);
-		//console.log('Code Challenge:', codeChallenge); // Debug
+		const baseUrl = 'https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize';
 
-		const baseUrl = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize';
+		// Use a string for the scope instead of an array
 		const params = {
 			client_id: process.env.OUTLOOK_CLIENT_ID,
 			response_type: 'code',
 			redirect_uri: process.env.OUTLOOK_REDIRECT_URI,
-			scope: 'user.read',
+			scope: 'user.read', // Change array to string
 			response_mode: 'query',
-			state: 'some_random_state', // Manejar el estado
-			code_challenge: codeChallenge, // Código desafío
-			code_challenge_method: 'S256', // Método de desafío
+			prompt: 'consent',
+			state: 'some_random_state',
+			code_challenge: codeChallenge,
+			code_challenge_method: 'S256',
 		};
-
-		//console.log('Params:', params); // Debug
 
 		const queryString = querystring.stringify(params);
 		const authurl = `${baseUrl}?${queryString}`;
-		//console.log('Auth URL:', authurl); // Debug
 		return authurl;
 	}
 
 	async outlookLogin(code: string) {
 		try {
-			const cca = new msal.ConfidentialClientApplication(this.msalConfig);
-			const response = await cca.acquireTokenByCode({
-				code,
-				scopes: ['user.read'],
+			const response = await this.msalClient.acquireTokenByCode({
+				code: code,
+				scopes: ['user.read'], // This can remain as an array
 				redirectUri: process.env.OUTLOOK_REDIRECT_URI,
+				codeVerifier: this.codes,
 			});
 
 			const {data} = await this.httpService
@@ -187,6 +184,11 @@ export class AuthService {
 			return this.handleSocialLogin('outlook', data.id, data);
 		} catch (error) {
 			console.error('Error during Outlook login:', error);
+			if (error instanceof msal.ClientAuthError) {
+				console.error('MSAL Error:', error.errorCode, error.errorMessage);
+			} else {
+				console.error('Unexpected Error:', error);
+			}
 			throw new Error('Outlook login failed. Please try again later.');
 		}
 	}
