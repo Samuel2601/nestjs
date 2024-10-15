@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google One Tap Login</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <h1>Google One Tap Login</h1>
+
+    <script>
+        // Inicializa el cliente de Google
+        window.onload = function () {
+            google.accounts.id.initialize({
+                client_id: '700625404417-apcets2tvdf368bquike6ip6hcckgthb.apps.googleusercontent.com',  // Reemplaza con tu Client ID de Google
+                callback: handleCredentialResponse // La función que maneja el token
+            });
+            google.accounts.id.prompt();  // Muestra el popup de One Tap
+        };
+
+        // Función que maneja la respuesta de One Tap
+        function handleCredentialResponse(response) {
+            console.log('JWT Token:', response.credential);
+
+            // Aquí puedes enviar el token al backend para autenticar al usuario
+            fetch('http://localhost:3000/auth/google/one-tap', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ credential: response.credential })
+            })
+            .then(res => res.json())
+            .then(data => console.log('Server response:', data))
+            .catch(err => console.error('Error:', err));
+        }
+    </script>
+</body>
+</html>

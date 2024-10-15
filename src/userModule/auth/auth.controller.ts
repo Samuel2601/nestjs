@@ -1,4 +1,4 @@
-import {Controller, Post, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe} from '@nestjs/common';
+import {Controller, Post, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe, Get, Query} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {LoginDto} from './auth.dto';
 
@@ -41,9 +41,20 @@ export class AuthController {
 		return this.authService.facebookLogin(accessToken);
 	}
 
-	@Post('outlook')
-	@HttpCode(HttpStatus.OK)
-	async outlookLogin(@Body('code') code: string) {
+	@Get('outlook')
+	@HttpCode(HttpStatus.FOUND)
+	async redirectToOutlook() {
+		// Aquí rediriges al usuario a la URL de autorización de Outlook
+		const authorizationUrl = await this.authService.getOutlookAuthorizationUrl();
+		return { redirect: authorizationUrl };
+	}
+
+	@Get('outlook/callback')
+	async outlookCallback(@Query('code') code: string, @Query('error') error: string) {
+		if (error) {
+			console.error('Error in callback:', error);
+			return {message: 'Error during Outlook login', error};
+		}
 		return this.authService.outlookLogin(code);
 	}
 
