@@ -1,5 +1,5 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
-import mongoose, {Document, Model, Types} from 'mongoose';
+import {Document, Model, Types} from 'mongoose';
 import {RoleUser} from './roleuser.schema';
 
 // Subdocumento para redes sociales
@@ -89,9 +89,7 @@ UserSchema.pre<User>('save', async function (next) {
 	if (!this.role) {
 		// Si el usuario no tiene rol asignado, buscar el rol predeterminado
 		const RoleUserModel = this.model(RoleUser.name) as Model<RoleUser>; // Accede al modelo correcto
-		console.log("ROLES ENCONTRADOS: ",await RoleUserModel.find());
 		const defaultRole = await RoleUserModel.findOne({is_default: true});
-		console.log('ROL de default', defaultRole);
 
 		if (defaultRole) {
 			this.role = defaultRole._id as Types.ObjectId;

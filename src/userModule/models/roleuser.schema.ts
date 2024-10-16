@@ -27,11 +27,11 @@ export const RoleUserSchema = SchemaFactory.createForClass(RoleUser);
 
 // Middleware para actualizar el rol por defecto
 RoleUserSchema.pre<RoleUser>('save', async function (next) {
-	const RoleUserModel = this.constructor as Model<RoleUser>;
-	console.log(await RoleUserModel.find());
 	if (this.is_default) {
 		// Desmarcar el anterior rol por defecto, si existe
 		// Aquí se utiliza el modelo directamente
+		//const RoleUserModel = this.constructor as Model<RoleUser>;
+		const RoleUserModel = this.model(RoleUser.name) as Model<RoleUser>;
 		await RoleUserModel.updateMany({is_default: true}, {$set: {is_default: false}});
 	}
 
