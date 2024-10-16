@@ -37,9 +37,8 @@ export class AuthService {
 		this.msalClient = new msal.PublicClientApplication({
 			auth: {
 				clientId: process.env.OUTLOOK_CLIENT_ID,
-				//clientSecret: process.env.OUTLOOK_CLIENT_SECRET,
-				authority: 'https://login.microsoftonline.com/consumers',
-				//knownAuthorities: ['login.microsoftonline.com'],
+				clientSecret: process.env.OUTLOOK_CLIENT_SECRET, // Make sure to include this
+				authority: `https://login.microsoftonline.com/${process.env.OUTLOOK_TENANT_ID}`,
 			},
 		});
 	}
@@ -132,49 +131,51 @@ export class AuthService {
 		}
 	}
 
-	// Genera un código verificador
-	async generateCodeVerifier() {
-		return cryptoO.randomBytes(32).toString('hex');
+	private generateCodeVerifier(): string {
+		return cryptoO.randomBytes(32).toString('base64url');
 	}
 
-	// Genera un código desafío
-	async generateCodeChallenge(verifier: string) {
-		return cryptoO.createHash('sha256').update(verifier).digest('base64url');
+	private async generateCodeChallenge(verifier: string): Promise<string> {
+		const hash = cryptoO.createHash('sha256').update(verifier).digest();
+		return Buffer.from(hash).toString('base64url');
 	}
-	codes: string = '';
-	async getOutlookAuthorizationUrl(): Promise<string> {
-		const codeVerifier = await this.generateCodeVerifier();
-		this.codes = codeVerifier;
+
+	async getOutlookAuthorizationUrl(): Promise<{url: string; codeVerifier: string; state: string}> {
+		const codeVerifier = this.generateCodeVerifier();
 		const codeChallenge = await this.generateCodeChallenge(codeVerifier);
-		const baseUrl = 'https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize';
+		const state = cryptoO.randomBytes(16).toString('hex');
 
-		// Use a string for the scope instead of an array
+		const baseUrl = `https://login.microsoftonline.com/${process.env.OUTLOOK_TENANT_ID}/oauth2/v2.0/authorize`;
+
 		const params = {
 			client_id: process.env.OUTLOOK_CLIENT_ID,
 			response_type: 'code',
 			redirect_uri: process.env.OUTLOOK_REDIRECT_URI,
-			scope: 'user.read', // Change array to string
+			scope: 'user.read offline_access',
 			response_mode: 'query',
 			prompt: 'consent',
-			state: 'some_random_state',
+			state: state,
 			code_challenge: codeChallenge,
 			code_challenge_method: 'S256',
 		};
 
 		const queryString = querystring.stringify(params);
-		const authurl = `${baseUrl}?${queryString}`;
-		return authurl;
+		const authUrl = `${baseUrl}?${queryString}`;
+		console.log('MANDADO: ', codeVerifier);
+		return {url: authUrl, codeVerifier, state};
 	}
 
-	async outlookLogin(code: string) {
+	async outlookLogin(code: string, codeVerifier: string, state: string) {
+		const coderesquest: msal.AuthorizationCodeRequest = {
+			code: code,
+			scopes: ['user.read', 'offline_access'],
+			redirectUri: process.env.OUTLOOK_REDIRECT_URI,
+			codeVerifier: codeVerifier,
+			state: state,
+		};
 		try {
-			const response = await this.msalClient.acquireTokenByCode({
-				code: code,
-				scopes: ['user.read'], // This can remain as an array
-				redirectUri: process.env.OUTLOOK_REDIRECT_URI,
-				codeVerifier: this.codes,
-			});
-
+			const response = await this.msalClient.acquireTokenByCode(coderesquest);
+			console.log('Respuesta: ', response);
 			const {data} = await this.httpService
 				.get('https://graph.microsoft.com/v1.0/me', {
 					headers: {Authorization: `Bearer ${response.accessToken}`},
@@ -184,7 +185,7 @@ export class AuthService {
 			return this.handleSocialLogin('outlook', data.id, data);
 		} catch (error) {
 			console.error('Error during Outlook login:', error);
-			if (error instanceof msal.ClientAuthError) {
+			if (error instanceof msal.AuthError) {
 				console.error('MSAL Error:', error.errorCode, error.errorMessage);
 			} else {
 				console.error('Unexpected Error:', error);
@@ -206,6 +207,7 @@ export class AuthService {
 	}
 
 	private async handleSocialLogin(provider: string, providerId: string, userData: any) {
+		console.log('DATA de USUARIO: ', userData);
 		// Primero busca por email
 		let user = await this.userModel.findOne({email: userData.email});
 
@@ -226,9 +228,9 @@ export class AuthService {
 		} else {
 			// Si no existe un usuario con el correo, creamos uno nuevo
 			user = await this.userModel.create({
-				name: userData.given_name || userData.name || '',
-				last_name: userData.family_name || '',
-				email: userData.email,
+				name: userData.given_name || userData.name || userData.givenName || '',
+				last_name: userData.family_name || userData.surname || '',
+				email: userData.email || userData.mail,
 				verificado: true,
 				redes: [
 					{

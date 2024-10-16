@@ -1,6 +1,7 @@
-import {Controller, Post, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe, Get, Query} from '@nestjs/common';
+import {Controller, Post, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe, Get, Query, Session, UseGuards, Res} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {LoginDto} from './auth.dto';
+import {Response} from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -42,20 +43,46 @@ export class AuthController {
 	}
 
 	@Get('outlook')
-	@HttpCode(HttpStatus.FOUND)
-	async redirectToOutlook() {
-		// Aquí rediriges al usuario a la URL de autorización de Outlook
-		const authorizationUrl = await this.authService.getOutlookAuthorizationUrl();
-		return { redirect: authorizationUrl };
+	async iniciarLoginOutlook(@Session() session: Record<string, any>, @Res() res: Response) {
+		const {url, codeVerifier, state} = await this.authService.getOutlookAuthorizationUrl();
+
+		// Almacenar codeVerifier y state en la sesión
+		session.outlookCodeVerifier = codeVerifier;
+		session.outlookState = state;
+		console.log(url);
+		// Redirigir al usuario a la URL de autorización  
+		res.redirect(url); // Usa res.redirect(url) en lugar de @Redirect
 	}
 
 	@Get('outlook/callback')
-	async outlookCallback(@Query('code') code: string, @Query('error') error: string) {
+	async callbackOutlook(@Query('code') code: string, @Query('error') error: string, @Query('state') state: string, @Session() session: Record<string, any>) {
 		if (error) {
-			console.error('Error in callback:', error);
-			return {message: 'Error during Outlook login', error};
+			console.error('Error en el callback:', error);
+			return {mensaje: 'Error durante el inicio de sesión con Outlook', error};
 		}
-		return this.authService.outlookLogin(code);
+
+		// Recuperar codeVerifier de la sesión
+		const codeVerifier = session.outlookCodeVerifier;
+		//console.log("RECIBIDO: ",codeVerifier);
+		if (!codeVerifier) {
+			return {mensaje: 'Sesión inválida. Por favor, intente iniciar sesión nuevamente.'};
+		}
+
+		// Verificar el parámetro state
+		if (state !== session.outlookState) {
+			return {mensaje: 'Estado inválido. Posible ataque CSRF.'};
+		}
+
+		try {
+			const resultado = await this.authService.outlookLogin(code, codeVerifier,state);
+			// Limpiar codeVerifier y state de la sesión
+			delete session.outlookCodeVerifier;
+			delete session.outlookState;
+			return resultado;
+		} catch (error) {
+			console.error('Error durante el inicio de sesión con Outlook:', error);
+			return {mensaje: 'Error durante el inicio de sesión con Outlook', error: error.message};
+		}
 	}
 
 	@Post('apple')
