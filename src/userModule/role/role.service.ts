@@ -7,6 +7,7 @@ import {RoleUser} from 'src/userModule/models/roleuser.schema';
 import {User} from 'src/userModule/models/user.schema';
 import {Permission} from '../models/permiso.schema';
 import {CreateRoleUserDto, UpdateRoleUserDto} from './role.dto';
+import {PermisoService} from '../permiso/permiso.service';
 
 @Injectable()
 export class RoleService implements OnModuleInit {
@@ -15,6 +16,7 @@ export class RoleService implements OnModuleInit {
 		@InjectModel(User.name) private userModel: Model<User>,
 		@InjectModel(Permission.name) private permissModel: Model<Permission>,
 		private notific: NotificationsService,
+		private permisoService: PermisoService,
 	) {}
 
 	async onModuleInit() {
@@ -23,11 +25,22 @@ export class RoleService implements OnModuleInit {
 
 	private async initializeRoles() {
 		const existingRoles = await this.roleModel.find().exec();
+		const existingPermissions = await this.permissModel.find().exec();
 
+		// Verificar si no hay permisos y crearlos si es necesario
+		if (existingPermissions.length === 0) {
+			await this.permisoService.initializePermissions();
+		}
+
+		// Verificar si no hay roles y crearlos si es necesario
 		if (existingRoles.length === 0) {
+			// Crear un array de IDs de permisos usando map
+			const permisos = existingPermissions.map((element: any) => element._id);
+
+			// Crear y guardar el rol de administrador
 			const adminRole = new this.roleModel({
 				name: 'admin',
-				permisos: [], // Aquí puedes añadir los permisos necesarios para el rol de admin
+				permisos: permisos, // Añadir los permisos aquí
 				is_default: true,
 			});
 
@@ -58,7 +71,7 @@ export class RoleService implements OnModuleInit {
 
 	async findById(id: string): Promise<any> {
 		try {
-			const role = await this.roleModel.findById(id).populate(this.permissModel.baseModelName);
+			const role = await this.roleModel.findById(id).populate(this.permissModel.name);
 			if (!role) {
 				return apiResponse(404, 'Rol no encontrado.', null, null);
 			}
@@ -106,14 +119,14 @@ export class RoleService implements OnModuleInit {
 
 	async updateRole(id: string, data: UpdateRoleUserDto): Promise<any> {
 		try {
-			const rolActual = await this.roleModel.findById(id).populate(this.permissModel.baseModelName);
+			const rolActual = await this.roleModel.findById(id).populate(this.permissModel.name);
 			if (!rolActual) {
 				return apiResponse(404, 'Rol no encontrado.', null, null);
 			}
 
 			const permisosActuales = rolActual.permisos.map((permiso) => permiso._id.toString());
 
-			const rolActualizado = await this.roleModel.findByIdAndUpdate(id, data, {new: true}).populate(this.permissModel.baseModelName);
+			const rolActualizado = await this.roleModel.findByIdAndUpdate(id, data, {new: true}).populate(this.permissModel.name);
 
 			if (!rolActualizado) {
 				return apiResponse(404, 'Rol no encontrado.', null, null);

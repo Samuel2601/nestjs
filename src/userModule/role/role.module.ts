@@ -7,6 +7,7 @@ import {User, UserSchema} from 'src/userModule/models/user.schema';
 import {Permission, PermissionSchema} from '../models/permiso.schema';
 import {NotificationsModule} from 'src/socket.io/notifications.module';
 import {CriterioModule} from 'src/common/dto/params&populate/criterioFormat.module';
+import { PermisoModule } from '../permiso/permiso.module';
 @Module({
 	imports: [
 		MongooseModule.forFeature([
@@ -19,6 +20,7 @@ import {CriterioModule} from 'src/common/dto/params&populate/criterioFormat.modu
 		]),
 		NotificationsModule,
 		CriterioModule,
+		PermisoModule
 	],
 	providers: [RoleService],
 	controllers: [RoleController],

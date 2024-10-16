@@ -6,6 +6,7 @@ import {User, UserSchema} from '../models/user.schema';
 import {Permission, PermissionSchema} from '../models/permiso.schema';
 import {NotificationsModule} from 'src/socket.io/notifications.module';
 import {CriterioModule} from 'src/common/dto/params&populate/criterioFormat.module';
+import {EmailModule} from 'src/common/email/email.module';
 
 @Module({
 	imports: [
@@ -18,6 +19,7 @@ import {CriterioModule} from 'src/common/dto/params&populate/criterioFormat.modu
 		]),
 		NotificationsModule,
 		CriterioModule,
+		EmailModule,
 	],
 	providers: [PermisoService],
 	controllers: [PermisoController],

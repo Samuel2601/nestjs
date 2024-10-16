@@ -9,7 +9,7 @@ import {Permission, PermissionSchema} from '../models/permiso.schema';
 import {RoleModule} from '../role/role.module';
 import {NotificationsModule} from 'src/socket.io/notifications.module';
 import {CriterioModule} from 'src/common/dto/params&populate/criterioFormat.module';
-import { EmailModuleModule } from 'src/common/emailModule/emailModule.module';
+import { EmailModule } from 'src/common/email/email.module';
 
 @Module({
 	imports: [
@@ -24,7 +24,7 @@ import { EmailModuleModule } from 'src/common/emailModule/emailModule.module';
 		RoleModule,
 		NotificationsModule,
 		CriterioModule,
-		EmailModuleModule,
+		EmailModule,
 	],
 	providers: [UserService],
 	controllers: [UserController],

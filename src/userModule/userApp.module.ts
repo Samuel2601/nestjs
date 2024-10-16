@@ -3,7 +3,7 @@ import {UserModule} from './user/user.module';
 import {RoleModule} from './role/role.module';
 import {NotificationsModule} from 'src/socket.io/notifications.module';
 import {CriterioModule} from 'src/common/dto/params&populate/criterioFormat.module';
-import {EmailModuleModule} from 'src/common/emailModule/emailModule.module';
+import {EmailModule} from 'src/common/email/email.module';
 import {UploadsModule} from 'src/common/uploads/uploads.module';
 import {AuthModule} from './auth/auth.module';
 import {PermisoModule} from './permiso/permiso.module';
@@ -22,7 +22,7 @@ import {Permission, PermissionSchema} from './models/permiso.schema';
 		PermisoModule,
 		NotificationsModule,
 		CriterioModule,
-		EmailModuleModule,
+		EmailModule,
 		UploadsModule,
 		AuthModule,
 	],

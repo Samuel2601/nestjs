@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revocación de Permiso</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #e74c3c;
+        }
+        p {
+            margin: 10px 0;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Revocación de Permiso</h1>
+        <p>Estimado/a {{userName}},</p>
+        <p>Te informamos que se ha revocado tu permiso para <strong>{{permiso}}</strong>.</p>
+        <p>Si tienes alguna pregunta o consideras que esta acción fue un error, por favor no dudes en contactarnos.</p>
+        <p>Gracias por tu comprensión.</p>
+        <div class="footer">
+            <p>Atentamente,</p>
+            <p>El equipo de administración</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -17,12 +17,6 @@ export class RoleController {
 		private readonly criterioService: CriterioService,
 	) {}
 
-	@Get('/:id')
-	@UsePipes(new ValidationPipe({transform: true}))
-	async findById(@Param() params: FindUserByIdDto): Promise<any> {
-		return await this.rolesService.findById(params.id);
-	}
-
 	@Get()
 	async getAllRoltefilter(@Query() query): Promise<any> {
 		// Obtener los filtros y los campos de populate
@@ -30,31 +24,37 @@ export class RoleController {
 		// Formatear los filtros
 		const filterparse = this.criterioService.criterioFormat(this.roleModel, filter);
 		const populateFieldsparse = this.criterioService.getPopulateFields(this.roleModel, populateFields); // Obtener los campos de populate
-		return this.rolesService.findAllfilter(filterparse, populateFieldsparse);
+		return await this.rolesService.findAllfilter(filterparse, populateFieldsparse);
+	}
+
+	@Get('/:id')
+	@UsePipes(new ValidationPipe({transform: true}))
+	async findById(@Param() params: FindUserByIdDto): Promise<any> {
+		return await this.rolesService.findById(params.id);
 	}
 
 	@Post('')
 	@UsePipes(new ValidationPipe({transform: true}))
 	async create(@Body() rolDto: Dto.CreateRoleUserDto): Promise<any> {
-		return this.rolesService.createRole(rolDto);
+		return await this.rolesService.createRole(rolDto);
 	}
 
 	@Put('/:id')
 	@UsePipes(new ValidationPipe({transform: true}))
 	async updateRole(@Param() params: FindUserByIdDto, @Body() rolDto: Dto.UpdateRoleUserDto): Promise<any> {
-		return this.rolesService.updateRole(params.id, rolDto);
+		return await this.rolesService.updateRole(params.id, rolDto);
 	}
 
 	@Delete('/:id')
 	@UsePipes(new ValidationPipe({transform: true}))
 	async deleteRole(@Param() params: FindUserByIdDto): Promise<any> {
-		return this.rolesService.deleteRole(params.id);
+		return await this.rolesService.deleteRole(params.id);
 	}
 
 	@Post('batch')
 	@UsePipes(new ValidationPipe({transform: true}))
 	async createBatch(@Body() rolDto: Dto.CreateRoleUserDto[]): Promise<any> {
-		return this.rolesService.createBatch(rolDto);
+		return await this.rolesService.createBatch(rolDto);
 	}
 
 	@Put('batch')

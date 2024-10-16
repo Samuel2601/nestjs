@@ -4,7 +4,7 @@ import * as fs from 'fs'; // Asegúrate de usar la forma correcta para importar 
 import * as handlebars from 'handlebars';
 
 @Injectable()
-export class EmailModuleService {
+export class EmailService {
   private transporter: nodemailer.Transporter; // Usa el tipo correcto para el transporter
 
   constructor() {

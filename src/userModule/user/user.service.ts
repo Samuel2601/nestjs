@@ -6,7 +6,7 @@ import {CreateUserDto, UpdateUserDto} from './user.dto';
 import * as bcrypt from 'bcrypt';
 import {apiResponse} from 'src/common/helpers/apiResponse';
 import {RoleService} from '../role/role.service';
-import {EmailModuleService} from 'src/common/emailModule/emailModule.service';
+import {EmailService} from 'src/common/email/email.service';
 import {RoleUser} from '../models/roleuser.schema';
 /**
  * Esta clase maneja las operaciones CRUD para los usuarios.
@@ -21,7 +21,7 @@ export class UserService {
 		@InjectModel(User.name) private readonly userModel: Model<User>,
 		@InjectModel(RoleUser.name) private readonly rolModel: Model<RoleUser>,
 		private readonly roleService: RoleService,
-		private readonly emailModuleService: EmailModuleService,
+		private readonly emailService: EmailService,
 	) {}
 
 	/**
@@ -49,7 +49,7 @@ export class UserService {
 	 */
 	async findById(id: string): Promise<any> {
 		try {
-			const user = await this.userModel.findById(id).populate(this.rolModel.baseModelName).exec();
+			const user = await this.userModel.findById(id).populate(this.rolModel.name).exec();
 			if (!user) {
 				//throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
 				return apiResponse(404, 'Usuario no encontrado', null, null);
@@ -83,7 +83,7 @@ export class UserService {
 			}
 			const newUser = new this.userModel(data);
 			const user = await newUser.save();
-			this.emailModuleService.sendNotification(user.email, 'Nuevo usuario registrado', 'src/emailTemplates/welcome.html', {
+			this.emailService.sendNotification(user.email, 'Nuevo usuario registrado', 'src/emailTemplates/welcome.html', {
 				name: user.name,
 				last_name: user.last_name,
 				email: user.email,
@@ -107,21 +107,21 @@ export class UserService {
 	 */
 	async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<any> {
 		try {
-			const user = await this.userModel.findById(id).populate(this.rolModel.baseModelName);
+			const user = await this.userModel.findById(id).populate(this.rolModel.name);
 			if (!user) {
 				//throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
 				return apiResponse(404, 'Usuario no encontrado', null, null);
 			}
-			const updateuser = await this.userModel.findByIdAndUpdate(id, updateUserDto, {new: true}).populate(this.rolModel.baseModelName);
+			const updateuser = await this.userModel.findByIdAndUpdate(id, updateUserDto, {new: true}).populate(this.rolModel.name);
 			if (user.role == updateuser.role) {
-				this.emailModuleService.sendNotification(user.email, 'Actualización de Información', 'src/emailTemplates/updateAccount.html', {
+				this.emailService.sendNotification(user.email, 'Actualización de Información', 'src/emailTemplates/updateAccount.html', {
 					userName: updateuser.name,
 					updatedFields: updateUserDto,
 				});
 			} else {
 				const role = await this.rolModel.findById(updateuser.role);
 
-				this.emailModuleService.sendNotification(user.email, 'Cambio de Rol', 'src/emailTemplates/role_change_notification.html', {
+				this.emailService.sendNotification(user.email, 'Cambio de Rol', 'src/emailTemplates/role_change_notification.html', {
 					userName: updateuser.name,
 					newRole: role.name,
 					permissions: role.permisos,
@@ -147,7 +147,7 @@ export class UserService {
 				//throw new NotFoundException(`User with ID ${id} not found`);
 				return apiResponse(404, 'Usuario no encontrado', null, null);
 			}
-			this.emailModuleService.sendNotification(deletedUser.email, 'Eliminación de Cuenta', 'src/emailTemplates/deleteAccount.html.html', {
+			this.emailService.sendNotification(deletedUser.email, 'Eliminación de Cuenta', 'src/emailTemplates/deleteAccount.html.html', {
 				name: deletedUser.name,
 				last_name: deletedUser.last_name,
 				deleteDate: deletedUser.createdAt,
@@ -172,7 +172,7 @@ export class UserService {
 			try {
 				const createdUser = await this.userModel.create(userDto);
 				createdUsers.push(createdUser);
-				this.emailModuleService.sendNotification(createdUser.email, 'Nuevo usuario registrado', 'src/emailTemplates/welcome.html', {
+				this.emailService.sendNotification(createdUser.email, 'Nuevo usuario registrado', 'src/emailTemplates/welcome.html', {
 					name: createdUser.name,
 					last_name: createdUser.last_name,
 					email: createdUser.email,
