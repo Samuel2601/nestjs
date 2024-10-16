@@ -1,13 +1,14 @@
 import {Schema, Prop, SchemaFactory} from '@nestjs/mongoose';
 import {Document, Types, Model} from 'mongoose';
-import { Permission } from './permiso.schema';
+import {Permission} from './permiso.schema';
+import {forwardRef} from '@nestjs/common';
 
 @Schema({timestamps: true})
 export class RoleUser extends Document {
 	@Prop({required: true, unique: true})
 	name: string;
 
-	@Prop([{type: Types.ObjectId, ref: Permission.modelName}])
+	@Prop([{type: Types.ObjectId, ref: forwardRef(() => Permission.name)}])
 	permisos: Types.ObjectId[];
 
 	@Prop({type: Boolean, default: false})
@@ -19,17 +20,18 @@ export class RoleUser extends Document {
 		return protectedMethods.includes(method);
 	}
 	// Nombre del modelo que puedes reutilizar
-  	static modelName = 'RoleUser';
+	//static modelName = 'RoleUser';
 }
 
 export const RoleUserSchema = SchemaFactory.createForClass(RoleUser);
 
 // Middleware para actualizar el rol por defecto
 RoleUserSchema.pre<RoleUser>('save', async function (next) {
+	const RoleUserModel = this.constructor as Model<RoleUser>;
+	console.log(await RoleUserModel.find());
 	if (this.is_default) {
 		// Desmarcar el anterior rol por defecto, si existe
 		// Aquí se utiliza el modelo directamente
-		const RoleUserModel = this.constructor as Model<RoleUser>;
 		await RoleUserModel.updateMany({is_default: true}, {$set: {is_default: false}});
 	}
 

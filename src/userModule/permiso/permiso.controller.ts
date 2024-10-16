@@ -12,17 +12,16 @@ import {
 } from '@nestjs/common';
 
 import * as Dto from './permiso.dto';
+import { PermisoService } from './permiso.service';
 
-@Controller('/')
+@Controller('/permisos')
 export class PermisoController {
-  @Get('test')
-  async get(@Query() params: Dto.testDto) {
-    return params;
+  constructor(  private readonly permisoService: PermisoService) {}
+  
+  @Get('init')
+  async get() {
+    return this.permisoService.onModuleInit();
   }
 
-  @Post('test')
-  async post(@Body() params: Dto.testDto) {
-    return params;
-  }
 
 }

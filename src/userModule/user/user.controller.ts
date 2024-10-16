@@ -55,7 +55,7 @@ export class UserController {
 	// Crear un nuevo usuario (POST /users)
 	@Post()
 	@UsePipes(new ValidationPipe({transform: true}))
-	@UseInterceptors(FileInterceptor('photo', UploadsService.configureMulter(5 * 1024 * 1024, 'users')))
+	@UseInterceptors(FileInterceptor('photo', UploadsService.configureMulter(5 * 1024 * 1024, 'users'))) //uso del fileinterceptor para subir el archivo
 	async createUser(@Body() userDto: CreateUserDto, @UploadedFile() file: Express.Multer.File): Promise<any> {
 		if (file) {
 			userDto.photo = file.filename;

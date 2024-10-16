@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, OnModuleInit} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
 import {Model, Types} from 'mongoose';
 import {apiResponse} from 'src/common/helpers/apiResponse';
@@ -9,13 +9,34 @@ import {Permission} from '../models/permiso.schema';
 import {CreateRoleUserDto, UpdateRoleUserDto} from './role.dto';
 
 @Injectable()
-export class RoleService {
+export class RoleService implements OnModuleInit {
 	constructor(
 		@InjectModel(RoleUser.name) private roleModel: Model<RoleUser>,
 		@InjectModel(User.name) private userModel: Model<User>,
 		@InjectModel(Permission.name) private permissModel: Model<Permission>,
 		private notific: NotificationsService,
 	) {}
+
+	async onModuleInit() {
+		await this.initializeRoles();
+	}
+
+	private async initializeRoles() {
+		const existingRoles = await this.roleModel.find().exec();
+
+		if (existingRoles.length === 0) {
+			const adminRole = new this.roleModel({
+				name: 'admin',
+				permisos: [], // Aquí puedes añadir los permisos necesarios para el rol de admin
+				is_default: true,
+			});
+
+			await adminRole.save();
+			console.log('Rol de administrador creado.');
+		} else {
+			console.log('Ya existen roles en la base de datos.');
+		}
+	}
 
 	/**
 	 * Devuelve una lista de todos los usuarios en la base de datos.

@@ -87,7 +87,7 @@ export class AuthService {
 	}
 
 	async googleOneTapLogin(credential: string) {
-		console.log('Se recibe el credential:', credential);
+		//console.log('Se recibe el credential:', credential);
 
 		try {
 			// Verificación del token usando la clave pública de Google
@@ -153,7 +153,7 @@ export class AuthService {
 			redirect_uri: process.env.OUTLOOK_REDIRECT_URI,
 			scope: 'user.read offline_access',
 			response_mode: 'query',
-			prompt: 'consent',
+			//prompt: 'consent',
 			state: state,
 			code_challenge: codeChallenge,
 			code_challenge_method: 'S256',
@@ -161,7 +161,7 @@ export class AuthService {
 
 		const queryString = querystring.stringify(params);
 		const authUrl = `${baseUrl}?${queryString}`;
-		console.log('MANDADO: ', codeVerifier);
+		//console.log('MANDADO: ', codeVerifier);
 		return {url: authUrl, codeVerifier, state};
 	}
 
@@ -175,7 +175,7 @@ export class AuthService {
 		};
 		try {
 			const response = await this.msalClient.acquireTokenByCode(coderesquest);
-			console.log('Respuesta: ', response);
+			//console.log('Respuesta: ', response);
 			const {data} = await this.httpService
 				.get('https://graph.microsoft.com/v1.0/me', {
 					headers: {Authorization: `Bearer ${response.accessToken}`},
@@ -207,9 +207,13 @@ export class AuthService {
 	}
 
 	private async handleSocialLogin(provider: string, providerId: string, userData: any) {
-		console.log('DATA de USUARIO: ', userData);
+		//console.log('DATA de USUARIO: ', userData);
+		const email = userData.email || userData.mail;
+		if (!email) {
+			return {message: 'No se pudo verificar el token'};
+		}
 		// Primero busca por email
-		let user = await this.userModel.findOne({email: userData.email});
+		let user = await this.userModel.findOne({email: email});
 
 		if (user) {
 			// Si el usuario existe, verifica si ya tiene la red social asociada

@@ -1,4 +1,4 @@
-import {Body, Query, Controller, Delete, Request, Get, Param, Post, NotFoundException, UnauthorizedException, Put, UsePipes, ValidationPipe, Injectable} from '@nestjs/common';
+import {Body, Query, Controller, Delete, Get, Param, Post, Put, UsePipes, ValidationPipe, Injectable} from '@nestjs/common';
 
 import * as Dto from './role.dto';
 import {RoleService} from './role.service';
@@ -31,6 +31,12 @@ export class RoleController {
 		const filterparse = this.criterioService.criterioFormat(this.roleModel, filter);
 		const populateFieldsparse = this.criterioService.getPopulateFields(this.roleModel, populateFields); // Obtener los campos de populate
 		return this.rolesService.findAllfilter(filterparse, populateFieldsparse);
+	}
+
+	@Post('')
+	@UsePipes(new ValidationPipe({transform: true}))
+	async create(@Body() rolDto: Dto.CreateRoleUserDto): Promise<any> {
+		return this.rolesService.createRole(rolDto);
 	}
 
 	@Put('/:id')

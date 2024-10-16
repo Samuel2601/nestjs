@@ -1,5 +1,5 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
-import {Document, Model, Types} from 'mongoose';
+import mongoose, {Document, Model, Types} from 'mongoose';
 import {RoleUser} from './roleuser.schema';
 
 // Subdocumento para redes sociales
@@ -54,7 +54,7 @@ export class User extends Document {
 	@Prop({default: true, required: true})
 	status: boolean;
 
-	@Prop({type: Types.ObjectId, ref: RoleUser.modelName, required: true})
+	@Prop({type: Types.ObjectId, ref: RoleUser.name})
 	role: Types.ObjectId;
 
 	@Prop({type: [SocialNetwork], default: []})
@@ -78,18 +78,21 @@ export class User extends Document {
 		return protectedMethods.includes(method);
 	}
 	// Nombre del modelo que puedes reutilizar
-	static modelName = 'User';
+	//static modelName = 'User';
 }
 
 // Crear el esquema usando SchemaFactory
 export const UserSchema = SchemaFactory.createForClass(User);
 
-// Agregar un pre-save para asignar el rol predeterminado si no tiene rol
+// Pre-save para asignar el rol predeterminado si no tiene rol
 UserSchema.pre<User>('save', async function (next) {
 	if (!this.role) {
 		// Si el usuario no tiene rol asignado, buscar el rol predeterminado
-		const RoleUserModel = this.constructor as Model<RoleUser>;
+		const RoleUserModel = this.model(RoleUser.name) as Model<RoleUser>; // Accede al modelo correcto
+		console.log("ROLES ENCONTRADOS: ",await RoleUserModel.find());
 		const defaultRole = await RoleUserModel.findOne({is_default: true});
+		console.log('ROL de default', defaultRole);
+
 		if (defaultRole) {
 			this.role = defaultRole._id as Types.ObjectId;
 		}

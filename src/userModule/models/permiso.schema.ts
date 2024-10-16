@@ -1,5 +1,7 @@
 import {Schema, Prop, SchemaFactory} from '@nestjs/mongoose';
 import {Document, Types} from 'mongoose';
+import { User } from './user.schema';
+import { forwardRef } from '@nestjs/common';
 
 @Schema({timestamps: true})
 export class Permission extends Document {
@@ -9,7 +11,7 @@ export class Permission extends Document {
 	@Prop({required: true, lowercase: true, trim: true})
 	method: string;
 
-	@Prop([{type: Types.ObjectId, ref: 'User'}])
+	@Prop([{type: Types.ObjectId, ref: forwardRef(() => User.name)}])
 	users: Types.ObjectId[];
 
 	@Prop({type: Boolean, default: false})
@@ -21,7 +23,7 @@ export class Permission extends Document {
 		return protectedMethods.includes(method);
 	}
 	// Nombre del modelo que puedes reutilizar
-	static modelName = 'Permission';
+	//static modelName = 'Permission';
 }
 
 // Índice compuesto para asegurar que la combinación de name y method sea única
