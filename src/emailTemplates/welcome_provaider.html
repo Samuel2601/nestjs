@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Bienvenido a Nuestro Servicio</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff; /* Color de fondo suave */
+            font-family: 'Arial', sans-serif;
+            color: #333333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Para que el borde sea suave */
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            border-bottom: 5px solid #0056b3; /* Borde inferior */
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+            background-image: linear-gradient(to bottom right, #e0f7fa, #ffffff); /* Fondo con degradado */
+        }
+        .content h2 {
+            color: #007bff;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .content p {
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: justify; /* Justificar el texto */
+        }
+        .content a {
+            display: inline-block;
+            background-color: #28a745; /* Color del botón */
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            margin-top: 15px;
+            transition: background-color 0.3s; /* Efecto de transición */
+        }
+        .content a:hover {
+            background-color: #218838; /* Color del botón en hover */
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #999999;
+            background-color: #f8f8f8;
+        }
+        .footer p {
+            margin: 0;
+        }
+        .social-icons {
+            margin-top: 15px;
+        }
+        .social-icons img {
+            width: 32px;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Bienvenido a Esmeraldas la Bella</h1>
+        </div>
+        <div class="content">
+            <h2>Hola {{name}} {{last_name}},</h2>
+            <p>¡Estamos emocionados de tenerte a bordo! Gracias por unirte a Esmeraldas la Bella.</p>
+            <p>Tu cuenta ha sido creada exitosamente y ya puedes comenzar a disfrutar de nuestros servicios.</p>
+            <p>Si tienes alguna pregunta, no dudes en responder a este correo o visitar nuestro
+                <a href="[Enlace_de_Soporte]" target="_blank">Centro de Soporte</a>.
+            </p>
+            <p>¡Esperamos verte pronto!</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 Esmeraldas la Bella. Todos los derechos reservados.</p>
+            <p>[Dirección de la Empresa]</p>
+            <div class="social-icons">
+                <a href="[Enlace_de_Facebook]"><img src="https://example.com/facebook.png" alt="Facebook" /></a>
+                <a href="[Enlace_de_Twitter]"><img src="https://example.com/twitter.png" alt="Twitter" /></a>
+                <a href="[Enlace_de_Instagram]"><img src="https://example.com/instagram.png" alt="Instagram" /></a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

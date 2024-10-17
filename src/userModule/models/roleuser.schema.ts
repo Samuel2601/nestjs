@@ -14,6 +14,9 @@ export class RoleUser extends Document {
 	@Prop({type: Boolean, default: false})
 	is_default: boolean;
 
+	@Prop({default: 'own'}) // 'own' o 'all'
+	access_scope: string;
+
 	// Método estático para verificar si el método está protegido
 	static isProtected(method: string): boolean {
 		const protectedMethods = ['get', 'post', 'put', 'delete', 'createBatch', 'updateBatch'];

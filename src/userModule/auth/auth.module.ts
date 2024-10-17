@@ -5,6 +5,7 @@ import {MongooseModule} from '@nestjs/mongoose';
 import {User, UserSchema} from '../models/user.schema';
 import {JwtModule} from '@nestjs/jwt';
 import {HttpModule} from '@nestjs/axios';
+import { EmailModule } from 'src/common/email/email.module';
 
 @Module({
 	imports: [
@@ -19,6 +20,7 @@ import {HttpModule} from '@nestjs/axios';
 			signOptions: {expiresIn: '60s'}, // Opciones de firma
 		}),
 		HttpModule,
+		EmailModule
 	],
 	providers: [AuthService],
 	controllers: [AuthController],

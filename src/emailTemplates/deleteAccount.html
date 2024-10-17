@@ -7,26 +7,42 @@
     <title>Cuenta Eliminada</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
         }
         .email-container {
             max-width: 600px;
-            margin: 0 auto;
+            margin: 40px auto;
             background-color: #ffffff;
             border: 1px solid #eaeaea;
-            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
         }
         h1 {
-            color: #ff4c4c;
-            font-size: 24px;
+            color: #ff4c4c; /* Color rojo para el encabezado */
+            font-size: 26px;
+            margin-bottom: 20px;
         }
         p {
             color: #333333;
             font-size: 16px;
-            line-height: 1.5;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+        ul li {
+            background: #f9f9f9;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #eaeaea;
         }
         .button-container {
             margin-top: 20px;
@@ -39,12 +55,23 @@
             text-decoration: none;
             border-radius: 5px;
             font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #d63939; /* Color más oscuro en hover */
         }
         .footer {
             margin-top: 30px;
-            font-size: 12px;
+            font-size: 14px;
             color: #888888;
             text-align: center;
+        }
+        .footer a {
+            color: #4CAF50; /* Color verde para enlaces */
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -52,8 +79,8 @@
     <div class="email-container">
         <h1>Cuenta Eliminada</h1>
         <p>Hola {{name}} {{last_name}},</p>
-        <p>Lamentamos informarte que tu cuenta en {{email}} ha sido eliminada. Si esto fue un error o necesitas más información, por favor, ponte en contacto con nuestro equipo de soporte.</p>
-        <p>Aquí están algunos detalles sobre la acción:</p>
+        <p>Lamentamos informarte que tu cuenta con el correo <strong>{{email}}</strong> ha sido eliminada. Si esto fue un error o necesitas más información, por favor, ponte en contacto con nuestro equipo de soporte.</p>
+        <p>Aquí tienes algunos detalles sobre la acción:</p>
         <ul>
             <li><strong>Fecha de eliminación:</strong> {{deleteDate}}</li>
             <li><strong>ID de la cuenta:</strong> {{accountId}}</li>
@@ -61,9 +88,9 @@
         <div class="button-container">
             <a href="{{supportUrl}}" class="button">Contactar Soporte</a>
         </div>
-        <p>Gracias por haber sido parte de nuestra comunidad.</p>
+        <p>Te agradecemos por haber sido parte de nuestra comunidad.</p>
         <p>Atentamente,</p>
-        <p>El equipo de {{serviceName}}</p>
+        <p>El equipo de <strong>{{serviceName}}</strong></p>
 
         <div class="footer">
             <p>Si tienes alguna pregunta o inquietud, no dudes en responder a este correo o visitar nuestro <a href="{{supportUrl}}">Centro de Soporte</a>.</p>

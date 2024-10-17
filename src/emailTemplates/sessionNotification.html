@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revocación de Permiso</title>
+    <title>Inicio de sesión en tu cuenta</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f9f9f9;
+            background-color: #f4f4f4;
+            color: #333;
             margin: 0;
             padding: 0;
         }
         .email-wrapper {
             width: 100%;
-            background-color: #f9f9f9;
+            background-color: #f4f4f4;
             padding: 40px 0;
         }
         .container {
@@ -23,17 +24,20 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 30px 20px;
             text-align: center;
         }
         .header {
-            background-color: #e74c3c;
+            background-color: #007BFF;
             padding: 30px 20px;
             color: #ffffff;
         }
         .header h1 {
             margin: 0;
             font-size: 28px;
+        }
+        .header img {
+            max-width: 80px;
+            border-radius: 50%;
         }
         .content {
             padding: 30px 20px;
@@ -48,6 +52,25 @@
             color: #666;
             line-height: 1.6;
         }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #007BFF;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .divider {
+            height: 1px;
+            background-color: #eaeaea;
+            margin: 40px 0;
+        }
         .footer {
             padding: 20px;
             background-color: #f4f4f4;
@@ -58,7 +81,7 @@
             margin: 5px 0;
         }
         .footer a {
-            color: #e74c3c;
+            color: #007BFF;
             text-decoration: none;
         }
         .footer a:hover {
@@ -69,23 +92,27 @@
 <body>
     <div class="email-wrapper">
         <div class="container">
-            <!-- Header -->
+            <!-- Header with logo -->
             <div class="header">
-                <h1>Revocación de Permiso</h1>
+                <img src="https://via.placeholder.com/80" alt="Logo" />
+                <h1>Inicio de sesión detectado</h1>
             </div>
 
             <!-- Main content -->
             <div class="content">
-                <h2>Estimado/a {{userName}},</h2>
-                <p>Te informamos que se ha revocado tu permiso para <strong>{{permiso}}</strong>.</p>
-                <p>Si tienes alguna pregunta o consideras que esta acción fue un error, por favor no dudes en contactarnos.</p>
-                <p>Gracias por tu comprensión.</p>
+                <h2>Hola, {{name}} {{last_name}}</h2>
+                <p>Hemos detectado un inicio de sesión en tu cuenta usando la red social <strong>{{provider}}</strong>.</p>
+                <p>Si fuiste tú, puedes ignorar este mensaje. Si no reconoces esta actividad, te recomendamos que restablezcas tu contraseña inmediatamente haciendo clic en el botón de abajo.</p>
+                <a href="{{resetPasswordUrl}}" class="button">Restablecer contraseña</a>
             </div>
+
+            <!-- Divider -->
+            <div class="divider"></div>
 
             <!-- Footer -->
             <div class="footer">
-                <p>Atentamente,</p>
-                <p>El equipo de administración</p>
+                <p>Gracias por confiar en nuestro servicio,</p>
+                <p><strong>El equipo de soporte</strong></p>
                 <p>¿Necesitas ayuda? <a href="mailto:soporte@tuapp.com">Contáctanos aquí</a></p>
                 <p>Este correo es informativo, por favor no respondas a este mensaje.</p>
             </div>

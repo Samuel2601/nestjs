@@ -42,6 +42,7 @@ export class RoleService implements OnModuleInit {
 				name: 'admin',
 				permisos: permisos, // Añadir los permisos aquí
 				is_default: true,
+				access_scope: 'all',
 			});
 
 			await adminRole.save();

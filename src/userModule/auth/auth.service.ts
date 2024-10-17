@@ -11,6 +11,7 @@ import * as jwksClient from 'jwks-rsa';
 import * as jwt from 'jsonwebtoken';
 import * as querystring from 'querystring';
 import * as cryptoO from 'crypto';
+import {EmailService} from 'src/common/email/email.service';
 interface GooglePayload {
 	sub: string;
 	email: string;
@@ -32,6 +33,7 @@ export class AuthService {
 		@InjectModel(User.name) private userModel: Model<User>,
 		private jwtService: JwtService,
 		private httpService: HttpService,
+		private readonly emailService: EmailService,
 	) {
 		this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 		this.msalClient = new msal.PublicClientApplication({
@@ -229,6 +231,12 @@ export class AuthService {
 
 				await user.save(); // Guardar los cambios en el usuario
 			}
+			this.emailService.sendNotification(user.email, 'Inicio de sesión en tu cuenta', 'src/emailTemplates/sessionNotification.html', {
+				name: user.name,
+				last_name: user.last_name,
+				provider,
+				resetPasswordUrl: 'https://tu-app.com/reset-password', // Reemplaza con la URL correspondiente
+			});
 		} else {
 			// Si no existe un usuario con el correo, creamos uno nuevo
 			user = await this.userModel.create({
@@ -243,6 +251,12 @@ export class AuthService {
 						profileUrl: userData.picture || userData.profile_image_url,
 					},
 				],
+			});
+
+			this.emailService.sendNotification(user.email, 'Nuevo usuario registrado', 'src/emailTemplates/welcome_provaider.html', {
+				name: user.name,
+				last_name: user.last_name,
+				email: user.email,
 			});
 		}
 
