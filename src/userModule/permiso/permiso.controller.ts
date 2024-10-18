@@ -44,7 +44,7 @@ export class PermisoController {
 	@Post()
 	@UsePipes(new ValidationPipe({transform: true}))
 	async createPermission(@Body() createPermissionDto: Dto.CreatePermissionDto): Promise<any> {
-		return await this.permisoService.createRole(createPermissionDto);
+		return await this.permisoService.createPermiso(createPermissionDto);
 	}
 
 	// Actualizar un permiso existente

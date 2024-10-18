@@ -94,8 +94,8 @@ export class PermisoService implements OnModuleInit {
 		}
 	}
 
-	async createRole(createRoleDto: CreatePermissionDto): Promise<any> {
-		const {name, method, users} = createRoleDto;
+	async createPermiso(createPermisoDto: CreatePermissionDto): Promise<any> {
+		const {name, method, users} = createPermisoDto;
 		try {
 			// Verifica si ya existe un rol con el mismo nombre
 			const existingRole = await this.permissModel.findOne({name});
