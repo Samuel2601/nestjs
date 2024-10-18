@@ -12,7 +12,7 @@ import {FindUserByIdDto} from 'src/common/dto/id.dto';
 export class PermisoController {
 	constructor(
 		private readonly permisoService: PermisoService,
-		@InjectModel(Permission.name) private roleModel: Model<Permission>,
+		@InjectModel(Permission.name) private permissionModel: Model<Permission>,
 		private readonly criterioService: CriterioService,
 	) {}
 
@@ -28,8 +28,8 @@ export class PermisoController {
 		// Obtener los filtros y los campos de populate
 		const {filter, populateFields} = this.criterioService.getfilterPopulate(query);
 		// Formatear los filtros
-		const filterparse = this.criterioService.criterioFormat(this.roleModel, filter);
-		const populateFieldsparse = this.criterioService.getPopulateFields(this.roleModel, populateFields); // Obtener los campos de populate
+		const filterparse = this.criterioService.criterioFormat(this.permissionModel, filter);
+		const populateFieldsparse = this.criterioService.getPopulateFields(this.permissionModel, populateFields); // Obtener los campos de populate
 		return await this.permisoService.findAllfilter(filterparse, populateFieldsparse);
 	}
 
@@ -44,21 +44,21 @@ export class PermisoController {
 	@Post()
 	@UsePipes(new ValidationPipe({transform: true}))
 	async createPermission(@Body() createPermissionDto: Dto.CreatePermissionDto): Promise<any> {
-		return await this.permisoService.createRole(createPermissionDto);
+		return await this.permisoService.createPermission(createPermissionDto);
 	}
 
 	// Actualizar un permiso existente
 	@Put('/:id')
 	@UsePipes(new ValidationPipe({transform: true}))
 	async updatePermission(@Param() params: FindUserByIdDto, @Body() updatePermissionDto: Dto.UpdatePermissionDto): Promise<any> {
-		return await this.permisoService.updateRole(params.id, updatePermissionDto);
+		return await this.permisoService.updatePermission(params.id, updatePermissionDto);
 	}
 
 	// Eliminar un permiso por su ID
 	@Delete(':id')
 	@UsePipes(new ValidationPipe({transform: true}))
 	async deletePermission(@Param() params: FindUserByIdDto): Promise<any> {
-		return await this.permisoService.deleteRole(params.id);
+		return await this.permisoService.deletePermission(params.id);
 	}
 
 	// Crear permisos en lote

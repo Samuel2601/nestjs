@@ -74,7 +74,7 @@ export class PermisoService implements OnModuleInit {
 				query = query.populate(field);
 			});
 			const data = await query.exec();
-			return apiResponse(200, 'Roles obtenidos con éxito.', data, null);
+			return apiResponse(200, 'Permisos obtenidos con éxito.', data, null);
 		} catch (error) {
 			console.error(error);
 			return apiResponse(500, 'ERROR', null, error);
@@ -94,12 +94,12 @@ export class PermisoService implements OnModuleInit {
 		}
 	}
 
-	async createRole(createRoleDto: CreatePermissionDto): Promise<any> {
-		const {name, method, users} = createRoleDto;
+	async createPermission(createPermissionDto: CreatePermissionDto): Promise<any> {
+		const {name, method, users} = createPermissionDto;
 		try {
 			// Verifica si ya existe un rol con el mismo nombre
-			const existingRole = await this.permissModel.findOne({name});
-			if (existingRole) {
+			const existingPermission = await this.permissModel.findOne({name});
+			if (existingPermission) {
 				return apiResponse(400, 'Ya existe un rol con ese nombre', null, null);
 			}
 
@@ -126,7 +126,7 @@ export class PermisoService implements OnModuleInit {
 		}
 	}
 
-	async updateRole(id: string, data: UpdatePermissionDto): Promise<any> {
+	async updatePermission(id: string, data: UpdatePermissionDto): Promise<any> {
 		try {
 			const permissActual = await this.permissModel.findById(id).populate(this.userModel.name);
 			if (!permissActual) {
@@ -177,7 +177,7 @@ export class PermisoService implements OnModuleInit {
 		}
 	}
 
-	async deleteRole(id: string): Promise<any> {
+	async deletePermission(id: string): Promise<any> {
 		try {
 			const permiss = await this.permissModel.findByIdAndDelete(id);
 			if (!permiss) {

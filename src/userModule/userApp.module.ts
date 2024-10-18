@@ -11,6 +11,7 @@ import {MongooseModule} from '@nestjs/mongoose';
 import {User, UserSchema} from './models/user.schema';
 import {RoleUser, RoleUserSchema} from './models/roleuser.schema';
 import {Permission, PermissionSchema} from './models/permiso.schema';
+import { CacheModule } from 'src/common/cache/Cache.module';
 
 @Module({
 	imports: [
@@ -25,6 +26,7 @@ import {Permission, PermissionSchema} from './models/permiso.schema';
 		EmailModule,
 		UploadsModule,
 		AuthModule,
+		CacheModule
 	],
 	providers: [],
 	controllers: [],

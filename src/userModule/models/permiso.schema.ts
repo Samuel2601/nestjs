@@ -12,7 +12,7 @@ export class Permission extends Document {
 	method: string;
 
 	@Prop([{type: Types.ObjectId, ref: forwardRef(() => User.name)}])
-	users: Types.ObjectId[];
+	users: User[];
 
 	@Prop({type: Boolean, default: false})
 	is_default: boolean;
