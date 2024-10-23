@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificación de Intento de Acceso</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            font-size: 16px;
+        }
+        .header {
+            background-color: #1e90ff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+        .header h1 {
+            margin: 0;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+            color: #333;
+        }
+        .content p {
+            margin: 15px 0;
+            line-height: 1.8;
+        }
+        .content .important {
+            font-weight: bold;
+            color: #ff6347;
+        }
+        .info-block {
+            background-color: #f9f9f9;
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .info-block p {
+            margin: 5px 0;
+            font-size: 15px;
+            color: #555;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #1e90ff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 6px;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #187bcd;
+        }
+        .footer {
+            padding: 20px;
+            background-color: #f4f4f4;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .footer a {
+            color: #1e90ff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Intento de Acceso a tu Cuenta</h1>
+        </div>
+        <div class="content">
+            <p>Hola <strong>{{userName}} {{last_name}}</strong>,</p>
+            <p>Detectamos un intento de acceso a tu cuenta desde una dirección IP no registrada. Por favor, verifica la información abajo:</p>
+            <div class="info-block">
+                <p><strong>Dirección IP:</strong> {{ip_address}}</p>
+                <p><strong>Dirección Geolocalización:</strong> {{location}}</p>
+                <p><strong>Fecha y Hora:</strong> {{attempt_time}}</p>
+            </div>
+            <p>Si reconoces esta actividad, no es necesario realizar ninguna acción. Sin embargo, si no has sido tú, te recomendamos que <span class="important">revises la seguridad de tu cuenta</span> y cambies tu contraseña de inmediato.</p>
+            <a href="{{security_url}}" class="btn">Revisar Actividad</a>
+        </div>
+        <div class="footer">
+            <p>Este es un mensaje automatizado. No respondas a este correo.</p>
+            <p>© 2024 TuCompañía. Todos los derechos reservados.</p>
+            <p><a href="{{support_url}}">Soporte Técnico</a></p>
+        </div>
+    </div>
+</body>
+</html>

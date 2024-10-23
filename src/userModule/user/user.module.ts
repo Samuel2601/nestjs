@@ -11,6 +11,7 @@ import {NotificationsModule} from 'src/socket.io/notifications.module';
 import {CriterioModule} from 'src/common/dto/params&populate/criterioFormat.module';
 import { EmailModule } from 'src/common/email/email.module';
 import { AuthModule } from '../auth/auth.module';
+import { CacheModule } from 'src/common/cache/cache.module';
 
 @Module({
 	imports: [
@@ -26,7 +27,8 @@ import { AuthModule } from '../auth/auth.module';
 		NotificationsModule,
 		CriterioModule,
 		EmailModule,
-		AuthModule
+		AuthModule,
+		CacheModule
 	],
 	providers: [UserService],
 	controllers: [UserController],

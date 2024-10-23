@@ -5,11 +5,13 @@ https://docs.nestjs.com/guards#guards
 import {Injectable, CanActivate, ExecutionContext, UnauthorizedException} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
 import {InjectModel} from '@nestjs/mongoose';
+import {createDecipheriv, scryptSync} from 'crypto';
 import {Model} from 'mongoose';
+import {CacheService} from 'src/common/cache/cache.service';
+import {NotificationsService} from 'src/socket.io/notifications.service';
 import {Permission} from 'src/userModule/models/permiso.schema';
 import {RoleUser} from 'src/userModule/models/roleuser.schema';
 import {User} from 'src/userModule/models/user.schema';
-import { CacheService } from 'src/common/cache/cache.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -18,8 +20,19 @@ export class AuthGuard implements CanActivate {
 		@InjectModel(User.name) private userModel: Model<User>,
 		@InjectModel(RoleUser.name) private roleUserModel: Model<RoleUser>,
 		@InjectModel(Permission.name) private permissionModel: Model<Permission>,
-		private readonly cacheService: CacheService
-	) {
+		private readonly cacheService: CacheService,
+		private notificationsGateway: NotificationsService,
+	) {}
+
+	private decryptIP(encryptedIP: string): string {
+		const algorithm = 'aes-256-cbc';
+		const [ivHex, encrypted] = encryptedIP.split(':');
+		const iv = Buffer.from(ivHex, 'hex');
+		const key = scryptSync('your_secret_key', 'salt', 32); // Usa la misma clave
+
+		const decipher = createDecipheriv(algorithm, key, iv);
+		const decryptedIP = Buffer.concat([decipher.update(Buffer.from(encrypted, 'hex')), decipher.final()]);
+		return decryptedIP.toString();
 	}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -35,8 +48,19 @@ export class AuthGuard implements CanActivate {
 			}
 			request['user'] = payload;
 
-			// Check if the user has permission for the requested route and method
+			// Obtener la IP del cliente
+			const clientIp = request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || request.connection.remoteAddress || request.socket.remoteAddress;
 
+			// Descifrar la IP del payload
+			const decryptedIp = this.decryptIP(payload.ip);
+			if (decryptedIp !== clientIp) {
+				// Aquí puedes enviar una notificación o tomar acción si las IPs no coinciden
+				await this.notificationsGateway.notifyUser(payload.sub,	{message: 'Warning: Your login attempt comes from a different IP address.'});
+				// También puedes lanzar un UnauthorizedException si lo deseas
+				throw new UnauthorizedException('IP mismatch');
+			}
+
+			// Verificar los permisos de acceso
 			const hasPermission = await this.checkRoutePermission(payload.sub, request.route.path, request.method.toLowerCase());
 			if (!hasPermission) {
 				throw new UnauthorizedException('You do not have permission to access this resource');

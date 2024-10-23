@@ -34,6 +34,7 @@
         .header h1 {
             margin: 0;
             font-size: 28px;
+            line-height: 1.2;
         }
         .header img {
             max-width: 80px;
@@ -43,7 +44,7 @@
             padding: 30px 20px;
         }
         .content h2 {
-            font-size: 22px;
+            font-size: 24px;
             color: #333;
             margin-bottom: 20px;
         }
@@ -51,6 +52,7 @@
             font-size: 16px;
             color: #666;
             line-height: 1.6;
+            margin: 10px 0;
         }
         .button {
             display: inline-block;
@@ -87,6 +89,15 @@
         .footer a:hover {
             text-decoration: underline;
         }
+        .info-block {
+            text-align: left;
+            margin: 20px 0;
+        }
+        .info-block p {
+            font-size: 15px;
+            margin: 5px 0;
+            color: #444;
+        }
     </style>
 </head>
 <body>
@@ -102,7 +113,18 @@
             <div class="content">
                 <h2>Hola, {{name}} {{last_name}}</h2>
                 <p>Hemos detectado un inicio de sesión en tu cuenta usando la red social <strong>{{provider}}</strong>.</p>
-                <p>Si fuiste tú, puedes ignorar este mensaje. Si no reconoces esta actividad, te recomendamos que restablezcas tu contraseña inmediatamente haciendo clic en el botón de abajo.</p>
+                <p>Si fuiste tú, puedes ignorar este mensaje. Sin embargo, si no reconoces esta actividad, te recomendamos que restablezcas tu contraseña inmediatamente.</p>
+
+                <!-- Divider -->
+                <div class="divider"></div>
+                
+                <!-- Information Block -->
+                <div class="info-block">
+                    <p><strong>Dirección IP:</strong> {{ip_address}}</p>
+                    <p><strong>Geolocalización:</strong> {{location}}</p>
+                    <p><strong>Fecha y Hora:</strong> {{attempt_time}}</p>
+                </div>
+
                 <a href="{{resetPasswordUrl}}" class="button">Restablecer contraseña</a>
             </div>
 

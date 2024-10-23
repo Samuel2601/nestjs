@@ -8,6 +8,7 @@ import {apiResponse} from 'src/common/helpers/apiResponse';
 import {RoleService} from '../role/role.service';
 import {EmailService} from 'src/common/email/email.service';
 import {RoleUser} from '../models/roleuser.schema';
+import { NotificationsService } from 'src/socket.io/notifications.service';
 /**
  * Esta clase maneja las operaciones CRUD para los usuarios.
  */
@@ -22,6 +23,7 @@ export class UserService {
 		@InjectModel(RoleUser.name) private readonly rolModel: Model<RoleUser>,
 		private readonly roleService: RoleService,
 		private readonly emailService: EmailService,
+		private notific: NotificationsService,
 	) {}
 
 	/**
@@ -119,6 +121,8 @@ export class UserService {
 					updatedFields: updateUserDto,
 				});
 			} else {
+				this.notific.notifyRoleChange(user._id.toString(), 'ROL_REMOVED', user.role.toString());
+				this.notific.notifyRoleChange(user._id.toString(), 'ROL_ADDED', updateuser.role.toString());
 				const role = await this.rolModel.findById(updateuser.role);
 
 				this.emailService.sendNotification(user.email, 'Cambio de Rol', 'src/emailTemplates/role_change_notification.html', {

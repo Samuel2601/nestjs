@@ -12,6 +12,7 @@ import * as jwt from 'jsonwebtoken';
 import * as querystring from 'querystring';
 import * as cryptoO from 'crypto';
 import {EmailService} from 'src/common/email/email.service';
+import {IpGeolocationService} from './ip-geolocation.service';
 interface GooglePayload {
 	sub: string;
 	email: string;
@@ -34,6 +35,7 @@ export class AuthService {
 		private jwtService: JwtService,
 		private httpService: HttpService,
 		private readonly emailService: EmailService,
+		private readonly ipGeolocationService: IpGeolocationService,
 	) {
 		this.googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 		this.msalClient = new msal.PublicClientApplication({
@@ -45,31 +47,88 @@ export class AuthService {
 		});
 	}
 
-	async validateUser(email: string, password: string): Promise<any> {
+	async validateUser(email: string, password: string, ip: string): Promise<any> {
+		// Busca el usuario en la base de datos
 		const user = await this.userModel.findOne({email});
-		if (user && (await bcrypt.compare(password, user.password))) {
+
+		// Verifica si el usuario existe y si tiene una contraseña válida
+		if (!user || !user.password) {
+			// Envia notificación por intento fallido (si se desea)
+			if (user) {
+				// Obtener la geolocalización
+				const locationData = await this.ipGeolocationService.getGeolocation(ip);
+				const locationMessage = locationData ? `Accediendo desde ${locationData.city}, ${locationData.country}` : 'Ubicación desconocida';
+
+				this.emailService.sendNotification(user.email, 'Intento de acceso fallido', 'src/emailTemplates/notificSessionInten.html', {
+					userName: user.name,
+					last_name: user.last_name,
+					ip_address: ip,
+					location: locationMessage,
+					attempt_time: new Date(),
+					security_url: '',
+				});
+			}
+
+			// Retorna null si el usuario no existe o la contraseña no es válida
+			return null;
+		}
+
+		// Compara la contraseña ingresada con la almacenada
+		const isPasswordValid = await bcrypt.compare(password, user.password);
+		if (isPasswordValid) {
 			const {password, ...result} = user.toObject();
 			return result;
 		}
+
+		// Retorna null si la contraseña no coincide
 		return null;
 	}
 
-	async login(user: any) {
+	async login(user: any, ip: string, provider?: string) {
 		console.log(user);
-		const payload = {email: user.email, sub: user._id};
+		const payload = {
+			email: user.email,
+			sub: user._id,
+			ip: this.encryptIP(ip), // Cifrar la IP
+		};
+
+		// Obtener la geolocalización
+		const locationData = await this.ipGeolocationService.getGeolocation(ip);
+		const locationMessage = locationData ? `Accediendo desde ${locationData.city}, ${locationData.country}` : 'Ubicación desconocida';
+
+		this.emailService.sendNotification(user.email, 'Inicio de sesión en tu cuenta', 'src/emailTemplates/sessionNotification.html', {
+			name: user.name,
+			last_name: user.last_name,
+			provider,
+			ip_address: ip,
+			location: locationMessage,
+			attempt_time: new Date(),
+			resetPasswordUrl: 'https://tu-app.com/reset-password',
+		});
+
 		return {
 			access_token: this.jwtService.sign(payload),
 		};
 	}
 
-	async googleLogin(token: string) {
+	private encryptIP(ip: string): string {
+		const algorithm = 'aes-256-cbc'; // Algoritmo de cifrado
+		const key = cryptoO.scryptSync('your_secret_key', 'salt', 32); // Genera una clave de 32 bytes
+		const iv = cryptoO.randomBytes(16); // Inicializa un vector de 16 bytes
+		const cipher = cryptoO.createCipheriv(algorithm, key, iv);
+
+		const encryptedIP = Buffer.concat([cipher.update(ip, 'utf8'), cipher.final()]);
+		return iv.toString('hex') + ':' + encryptedIP.toString('hex'); // Devuelve el IV junto con el IP cifrado
+	}
+
+	async googleLogin(token: string, ip: string) {
 		try {
 			const ticket = await this.googleClient.verifyIdToken({
 				idToken: token,
 				audience: process.env.GOOGLE_CLIENT_ID,
 			});
 			const payload = ticket.getPayload();
-			return this.handleSocialLogin('google', payload.sub, payload);
+			return this.handleSocialLogin('google', payload.sub, payload, ip);
 		} catch (error) {
 			console.error('Error during Google login:', error);
 			throw new Error('Google login failed. Please try again later.');
@@ -88,7 +147,7 @@ export class AuthService {
 		});
 	}
 
-	async googleOneTapLogin(credential: string) {
+	async googleOneTapLogin(credential: string, ip: string) {
 		//console.log('Se recibe el credential:', credential);
 
 		try {
@@ -106,27 +165,27 @@ export class AuthService {
 				throw new Error('No se pudo verificar el token');
 			}
 
-			return this.handleSocialLogin('google', payload.sub, payload);
+			return this.handleSocialLogin('google', payload.sub, payload, ip);
 		} catch (error) {
 			console.error('Error during Google One Tap login:', error);
 			throw new Error('Google One Tap login failed. Please try again later.');
 		}
 	}
 
-	async googlePlusLogin(accessToken: string) {
+	async googlePlusLogin(accessToken: string, ip: string) {
 		try {
 			const {data} = await this.httpService.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${accessToken}`).toPromise();
-			return this.handleSocialLogin('google_plus', data.id, data);
+			return this.handleSocialLogin('google_plus', data.id, data, ip);
 		} catch (error) {
 			console.error('Error during Google Plus login:', error);
 			throw new Error('Google Plus login failed. Please try again later.');
 		}
 	}
 
-	async facebookLogin(accessToken: string) {
+	async facebookLogin(accessToken: string, ip: string) {
 		try {
 			const {data} = await this.httpService.get(`https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`).toPromise();
-			return this.handleSocialLogin('facebook', data.id, data);
+			return this.handleSocialLogin('facebook', data.id, data, ip);
 		} catch (error) {
 			console.error('Error during Facebook login:', error);
 			throw new Error('Facebook login failed. Please try again later.');
@@ -163,11 +222,12 @@ export class AuthService {
 
 		const queryString = querystring.stringify(params);
 		const authUrl = `${baseUrl}?${queryString}`;
+
 		//console.log('MANDADO: ', codeVerifier);
 		return {url: authUrl, codeVerifier, state};
 	}
 
-	async outlookLogin(code: string, codeVerifier: string, state: string) {
+	async outlookLogin(code: string, codeVerifier: string, state: string, ip: string) {
 		const coderesquest: msal.AuthorizationCodeRequest = {
 			code: code,
 			scopes: ['user.read', 'offline_access'],
@@ -184,7 +244,7 @@ export class AuthService {
 				})
 				.toPromise();
 
-			return this.handleSocialLogin('outlook', data.id, data);
+			return this.handleSocialLogin('outlook', data.id, data, ip);
 		} catch (error) {
 			console.error('Error during Outlook login:', error);
 			if (error instanceof msal.AuthError) {
@@ -196,19 +256,19 @@ export class AuthService {
 		}
 	}
 
-	async appleLogin(idToken: string) {
+	async appleLogin(idToken: string, ip: string) {
 		try {
 			const decodedToken = this.jwtService.verify(idToken, {
 				secret: process.env.APPLE_CLIENT_SECRET,
 			});
-			return this.handleSocialLogin('apple', decodedToken.sub, decodedToken);
+			return this.handleSocialLogin('apple', decodedToken.sub, decodedToken, ip);
 		} catch (error) {
 			console.error('Error during Apple login:', error);
 			throw new Error('Apple login failed. Please try again later.');
 		}
 	}
 
-	private async handleSocialLogin(provider: string, providerId: string, userData: any) {
+	private async handleSocialLogin(provider: string, providerId: string, userData: any, ip: string) {
 		//console.log('DATA de USUARIO: ', userData);
 		const email = userData.email || userData.mail;
 		if (!email) {
@@ -231,12 +291,6 @@ export class AuthService {
 
 				await user.save(); // Guardar los cambios en el usuario
 			}
-			this.emailService.sendNotification(user.email, 'Inicio de sesión en tu cuenta', 'src/emailTemplates/sessionNotification.html', {
-				name: user.name,
-				last_name: user.last_name,
-				provider,
-				resetPasswordUrl: 'https://tu-app.com/reset-password', // Reemplaza con la URL correspondiente
-			});
 		} else {
 			// Si no existe un usuario con el correo, creamos uno nuevo
 			user = await this.userModel.create({
@@ -261,7 +315,7 @@ export class AuthService {
 		}
 
 		// Autenticar al usuario y devolver el token
-		return this.login(user);
+		return this.login(user, ip);
 	}
 
 	async logout(userId: string) {
