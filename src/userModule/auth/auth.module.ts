@@ -11,7 +11,8 @@ import {RoleUser, RoleUserSchema} from '../models/roleuser.schema';
 import {Permission, PermissionSchema} from '../models/permiso.schema';
 import {CacheModule} from 'src/common/cache/cache.module';
 import {IpGeolocationService} from './ip-geolocation.service';
-import { NotificationsModule } from 'src/socket.io/notifications.module';
+import {NotificationsModule} from 'src/socket.io/notifications.module';
+import {RefreshToken, RefreshTokenSchema} from '../models/refreshToken.schema';
 
 @Module({
 	imports: [
@@ -19,15 +20,16 @@ import { NotificationsModule } from 'src/socket.io/notifications.module';
 			{name: User.name, schema: UserSchema},
 			{name: RoleUser.name, schema: RoleUserSchema},
 			{name: Permission.name, schema: PermissionSchema},
+			{name: RefreshToken.name, schema: RefreshTokenSchema},
 		]),
 		JwtModule.register({
 			secret: process.env.JWT_SECRET, // La clave secreta para firmar los tokens
-			signOptions: {expiresIn: '60h'}, // Opciones de firma
+			signOptions: {expiresIn: '15m'}, // Opciones de firma
 		}),
 		HttpModule,
 		EmailModule,
 		CacheModule,
-		NotificationsModule
+		NotificationsModule,
 	],
 	providers: [AuthService, IpGeolocationService, AuthGuard],
 	controllers: [AuthController],

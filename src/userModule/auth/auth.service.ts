@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
 import {InjectModel} from '@nestjs/mongoose';
 import {Model} from 'mongoose';
@@ -13,6 +13,7 @@ import * as querystring from 'querystring';
 import * as cryptoO from 'crypto';
 import {EmailService} from 'src/common/email/email.service';
 import {IpGeolocationService} from './ip-geolocation.service';
+import {RefreshToken} from '../models/refreshToken.schema';
 interface GooglePayload {
 	sub: string;
 	email: string;
@@ -32,6 +33,7 @@ export class AuthService {
 
 	constructor(
 		@InjectModel(User.name) private userModel: Model<User>,
+		@InjectModel(RefreshToken.name) private refreshTokenModel: Model<RefreshToken>,
 		private jwtService: JwtService,
 		private httpService: HttpService,
 		private readonly emailService: EmailService,
@@ -86,11 +88,33 @@ export class AuthService {
 
 	async login(user: any, ip: string, provider?: string) {
 		console.log(user);
-		const payload = {
+
+		// Payload para el Access Token con IP cifrada
+		const accessTokenPayload = {
 			email: user.email,
 			sub: user._id,
-			ip: this.encryptIP(ip), // Cifrar la IP
+			ip: ip,
 		};
+
+		// Generar Access Token
+		const accessToken = this.jwtService.sign(accessTokenPayload, {expiresIn: '15m'});
+
+		// Generar Refresh Token sin la IP
+		const refreshTokenPayload = {
+			sub: user._id,
+		};
+
+		// Generar el token sin la IP
+		const refreshToken = this.jwtService.sign(refreshTokenPayload, {expiresIn: '7d'});
+
+		// Guardar el Refresh Token en la base de datos
+		await this.refreshTokenModel.create({
+			userId: user._id,
+			token: refreshToken,
+			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 días de expiración
+			ipAddress: ip,
+			lastUsedAt: new Date(),
+		});
 
 		// Obtener la geolocalización
 		const locationData = await this.ipGeolocationService.getGeolocation(ip);
@@ -99,7 +123,7 @@ export class AuthService {
 		this.emailService.sendNotification(user.email, 'Inicio de sesión en tu cuenta', 'src/emailTemplates/sessionNotification.html', {
 			name: user.name,
 			last_name: user.last_name,
-			provider,
+			provider: provider,
 			ip_address: ip,
 			location: locationMessage,
 			attempt_time: new Date(),
@@ -107,18 +131,44 @@ export class AuthService {
 		});
 
 		return {
-			access_token: this.jwtService.sign(payload),
+			access_token: accessToken,
+			refresh_token: refreshToken, // Retornar el Refresh Token también
 		};
 	}
 
-	private encryptIP(ip: string): string {
-		const algorithm = 'aes-256-cbc'; // Algoritmo de cifrado
-		const key = cryptoO.scryptSync('your_secret_key', 'salt', 32); // Genera una clave de 32 bytes
-		const iv = cryptoO.randomBytes(16); // Inicializa un vector de 16 bytes
-		const cipher = cryptoO.createCipheriv(algorithm, key, iv);
+	async refreshToken(userId: string, refreshToken: string, ip: string) {
+		const storedToken = await this.refreshTokenModel.findOne({token: refreshToken, userId});
 
-		const encryptedIP = Buffer.concat([cipher.update(ip, 'utf8'), cipher.final()]);
-		return iv.toString('hex') + ':' + encryptedIP.toString('hex'); // Devuelve el IV junto con el IP cifrado
+		// Verificar si el token existe
+		if (!storedToken) {
+			throw new UnauthorizedException('Invalid refresh token');
+		}
+
+		// Verificar si el token está revocado
+		if (storedToken.isRevoked) {
+			throw new UnauthorizedException('Token revoked');
+		}
+
+		// Verificar si el token ha expirado
+		if (storedToken.expiresAt < new Date()) {
+			throw new UnauthorizedException('Token expired');
+		}
+
+		// Actualizar la última fecha de uso
+		storedToken.lastUsedAt = new Date();
+		await storedToken.save();
+
+		// Generar un nuevo Access Token
+		const newAccessTokenPayload = {
+			email: userId, // O los datos que desees incluir
+			sub: userId,
+			ip: ip, // Cifrar la IP de nuevo si es necesario
+		};
+		const newAccessToken = this.jwtService.sign(newAccessTokenPayload, {expiresIn: '15m'});
+
+		return {
+			access_token: newAccessToken,
+		};
 	}
 
 	async googleLogin(token: string, ip: string) {
@@ -315,12 +365,17 @@ export class AuthService {
 		}
 
 		// Autenticar al usuario y devolver el token
-		return this.login(user, ip);
+		return this.login(user, ip, provider);
 	}
 
 	async logout(userId: string) {
-		// Para logout, simplemente necesitas eliminar el token del lado del cliente
-		// No hay acción necesaria en el servidor, a menos que estés usando sesiones
+		// Invalida el Refresh Token
+		const result = await this.refreshTokenModel.updateOne({userId: userId, isRevoked: false}, {isRevoked: true});
+
+		if (result.modifiedCount === 0) {
+			throw new Error('No active session found or already logged out.');
+		}
+
 		return {message: 'Logout successful'};
 	}
 }
