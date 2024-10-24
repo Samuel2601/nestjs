@@ -58,6 +58,13 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+
+## Generate typedocs
+
+```bash
+$ npx typedoc --entryPoints src --entryPointStrategy expand --out doc
+```
+
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:
