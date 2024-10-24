@@ -84,6 +84,9 @@ export class User extends Document {
 // Crear el esquema usando SchemaFactory
 export const UserSchema = SchemaFactory.createForClass(User);
 
+// Añadir un índice compuesto para buscar por redes sociales (provider y providerId)
+UserSchema.index({'redes.provider': 1, 'redes.providerId': 1});
+
 // Pre-save para asignar el rol predeterminado si no tiene rol
 UserSchema.pre<User>('save', async function (next) {
 	if (!this.role) {

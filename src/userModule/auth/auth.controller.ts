@@ -1,4 +1,4 @@
-import {Controller, Post, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe, Get, Query, Session, UseGuards, Res, Request} from '@nestjs/common';
+import {Controller, Post, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe, Get, Query, Session, UseGuards, Res, Request, UnauthorizedException} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {LoginDto} from './auth.dto';
 import {Response} from 'express';
@@ -14,9 +14,6 @@ export class AuthController {
 	@UsePipes(new ValidationPipe({transform: true}))
 	async login(@ClientIP() ip: string, @Body() loginDto: LoginDto) {
 		const user = await this.authService.validateUser(loginDto.email, loginDto.password, ip);
-		if (!user) {
-			return {message: 'Invalid credentials'};
-		}
 		return this.authService.login(user, ip, 'Correo y contraseña');
 	}
 
@@ -98,7 +95,7 @@ export class AuthController {
 	async appleLogin(@ClientIP() ip: string, @Body('idToken') idToken: string) {
 		return this.authService.appleLogin(idToken, ip);
 	}
-	
+
 	@Post('refresh')
 	@UseGuards(AuthGuard)
 	@UsePipes(new ValidationPipe({transform: true}))

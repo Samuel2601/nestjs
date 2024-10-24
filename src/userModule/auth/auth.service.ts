@@ -53,26 +53,8 @@ export class AuthService {
 		// Busca el usuario en la base de datos
 		const user = await this.userModel.findOne({email});
 
-		// Verifica si el usuario existe y si tiene una contraseña válida
 		if (!user || !user.password) {
-			// Envia notificación por intento fallido (si se desea)
-			if (user) {
-				// Obtener la geolocalización
-				const locationData = await this.ipGeolocationService.getGeolocation(ip);
-				const locationMessage = locationData ? `Accediendo desde ${locationData.city}, ${locationData.country}` : 'Ubicación desconocida';
-
-				this.emailService.sendNotification(user.email, 'Intento de acceso fallido', 'src/emailTemplates/notificSessionInten.html', {
-					userName: user.name,
-					last_name: user.last_name,
-					ip_address: ip,
-					location: locationMessage,
-					attempt_time: new Date(),
-					security_url: '',
-				});
-			}
-
-			// Retorna null si el usuario no existe o la contraseña no es válida
-			return null;
+			throw new UnauthorizedException('Credenciales incorrectas');
 		}
 
 		// Compara la contraseña ingresada con la almacenada
@@ -80,10 +62,22 @@ export class AuthService {
 		if (isPasswordValid) {
 			const {password, ...result} = user.toObject();
 			return result;
-		}
+		} else {
+			// Obtener la geolocalización
+			const locationData = await this.ipGeolocationService.getGeolocation(ip);
+			const locationMessage = locationData ? `Accediendo desde ${locationData.city}, ${locationData.country}` : 'Ubicación desconocida';
 
-		// Retorna null si la contraseña no coincide
-		return null;
+			this.emailService.sendNotification(user.email, 'Intento de acceso fallido', 'src/emailTemplates/notificSessionInten.html', {
+				userName: user.name,
+				last_name: user.last_name,
+				ip_address: ip,
+				location: locationMessage,
+				attempt_time: new Date(),
+				security_url: '',
+			});
+
+			throw new UnauthorizedException('Credenciales incorrectas');
+		}
 	}
 
 	async login(user: any, ip: string, provider?: string) {
@@ -264,7 +258,7 @@ export class AuthService {
 			redirect_uri: process.env.OUTLOOK_REDIRECT_URI,
 			scope: 'user.read offline_access',
 			response_mode: 'query',
-			//prompt: 'consent',
+			prompt: 'consent', // Cambia esto a 'consent' si quieres que el usuario se pregunte por consentimiento
 			state: state,
 			code_challenge: codeChallenge,
 			code_challenge_method: 'S256',
@@ -319,16 +313,21 @@ export class AuthService {
 	}
 
 	private async handleSocialLogin(provider: string, providerId: string, userData: any, ip: string) {
-		//console.log('DATA de USUARIO: ', userData);
 		const email = userData.email || userData.mail;
-		if (!email) {
-			return {message: 'No se pudo verificar el token'};
+
+		// Primero busca por el providerId y provider
+		let user = await this.userModel.findOne({
+			'redes.provider': provider,
+			'redes.providerId': providerId,
+		});
+
+		if (!user && email) {
+			// Si no existe, intenta buscar por email
+			user = await this.userModel.findOne({email});
 		}
-		// Primero busca por email
-		let user = await this.userModel.findOne({email: email});
 
 		if (user) {
-			// Si el usuario existe, verifica si ya tiene la red social asociada
+			// Si el usuario existe, verifica si tiene la red social asociada
 			const socialNetwork = user.redes.find((network) => network.provider === provider && network.providerId === providerId);
 
 			if (!socialNetwork) {
@@ -342,7 +341,7 @@ export class AuthService {
 				await user.save(); // Guardar los cambios en el usuario
 			}
 		} else {
-			// Si no existe un usuario con el correo, creamos uno nuevo
+			// Si no existe un usuario con el correo o providerId, creamos uno nuevo
 			user = await this.userModel.create({
 				name: userData.given_name || userData.name || userData.givenName || '',
 				last_name: userData.family_name || userData.surname || '',
@@ -357,6 +356,7 @@ export class AuthService {
 				],
 			});
 
+			// Enviar notificación por correo
 			this.emailService.sendNotification(user.email, 'Nuevo usuario registrado', 'src/emailTemplates/welcome_provaider.html', {
 				name: user.name,
 				last_name: user.last_name,
