@@ -313,6 +313,7 @@ export class AuthService {
 	}
 
 	private async handleSocialLogin(provider: string, providerId: string, userData: any, ip: string) {
+		console.log("Información de la red social:", provider, providerId, userData);
 		const email = userData.email || userData.mail;
 
 		// Primero busca por el providerId y provider
