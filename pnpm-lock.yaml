@@ -77,6 +77,9 @@ importers:
       crypto:
         specifier: ^1.0.1
         version: 1.0.1
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
       express-session:
         specifier: ^1.18.1
         version: 1.18.1
