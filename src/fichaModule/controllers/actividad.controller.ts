@@ -9,7 +9,7 @@ import {FileInterceptor} from '@nestjs/platform-express';
 import {UploadsService} from 'src/common/uploads/uploads.service';
 import {FindUserByIdDto} from 'src/common/dto/id.dto';
 
-@Controller()
+@Controller('/ficha/actividad')
 export class ActividadController {
 	constructor(private readonly actividadService: ActividadService) {}
 

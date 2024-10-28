@@ -9,6 +9,7 @@ import {StatusfichaController} from './controllers/statusficha.controller';
 import {ActividadService} from './services/actividad.service';
 import {Status, StatusSchema} from './models/status.schema';
 import {ActividadController} from './controllers/actividad.controller';
+import { CriterioModule } from 'src/common/dto/params&populate/criterioFormat.module';
 
 @Module({
 	imports: [
@@ -17,6 +18,7 @@ import {ActividadController} from './controllers/actividad.controller';
 			{name: Actividad.name, schema: ActividadSchema},
 			{name: Status.name, schema: StatusSchema},
 		]),
+		CriterioModule
 	],
 	providers: [FichaModuleService, StatusFichaService, ActividadService],
 	controllers: [FichaModuleController, StatusfichaController, ActividadController],

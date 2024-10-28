@@ -7,7 +7,7 @@ import {StatusFichaService} from '../services/statusficha.service';
 import {CreateStatusDto, UpdateStatusDto} from '../fichaModule.dto';
 import {FindUserByIdDto} from 'src/common/dto/id.dto';
 
-@Controller()
+@Controller('/ficha/status')
 export class StatusfichaController {
 	constructor(private readonly statusFichaService: StatusFichaService) {}
 
