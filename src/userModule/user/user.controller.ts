@@ -31,7 +31,7 @@ import {AuthGuard} from 'src/userModule/auth/guards/auth.guard';
 export class UserController {
 	constructor(
 		private readonly usersService: UserService,
-		@InjectModel(User.name) private roleModel: Model<User>,
+		@InjectModel(User.name) private userModel: Model<User>,
 		private readonly criterioService: CriterioService,
 	) {}
 
@@ -50,8 +50,8 @@ export class UserController {
 		// Obtener los filtros y los campos de populate
 		const {filter, populateFields} = this.criterioService.getfilterPopulate(query);
 		// Formatear los filtros
-		const filterparse = this.criterioService.criterioFormat(this.roleModel, filter);
-		const populateFieldsparse = this.criterioService.getPopulateFields(this.roleModel, populateFields); // Obtener los campos de populate
+		const filterparse = this.criterioService.criterioFormat(this.userModel, filter);
+		const populateFieldsparse = this.criterioService.getPopulateFields(this.userModel, populateFields); // Obtener los campos de populate
 
 		return this.usersService.findAllfilter(filterparse, populateFieldsparse);
 	}

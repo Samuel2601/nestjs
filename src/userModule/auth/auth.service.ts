@@ -258,7 +258,7 @@ export class AuthService {
 			redirect_uri: process.env.OUTLOOK_REDIRECT_URI,
 			scope: 'user.read offline_access',
 			response_mode: 'query',
-			prompt: 'consent', // Cambia esto a 'consent' si quieres que el usuario se pregunte por consentimiento
+			//prompt: 'consent', // Cambia esto a 'consent' si quieres que el usuario se pregunte por consentimiento
 			state: state,
 			code_challenge: codeChallenge,
 			code_challenge_method: 'S256',

@@ -51,7 +51,7 @@ export class UserService {
 	 */
 	async findById(id: string): Promise<any> {
 		try {
-			const user = await this.userModel.findById(id).populate(this.rolModel.name).exec();
+			const user = await this.userModel.findById(id).populate('role').exec();
 			if (!user) {
 				//throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
 				return apiResponse(404, 'Usuario no encontrado', null, null);
