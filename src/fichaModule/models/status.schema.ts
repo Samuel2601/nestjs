@@ -11,6 +11,9 @@ export class Status extends Document {
 
 	@Prop({default: false})
 	is_default: boolean; // Indica si este es el estado predeterminado
+
+	@Prop({required: true, default: 7}) // Número de días para cambiar al siguiente estado
+	daysToNext: number;
 }
 
 export const StatusSchema = SchemaFactory.createForClass(Status);

@@ -31,7 +31,7 @@ import {RefreshToken, RefreshTokenSchema} from '../models/refreshToken.schema';
 		CacheModule,
 		NotificationsModule,
 	],
-	providers: [AuthService, IpGeolocationService, AuthGuard],
+	providers: [AuthService, IpGeolocationService, AuthGuard, JwtModule],
 	controllers: [AuthController],
 	exports: [AuthService, IpGeolocationService, JwtModule, AuthGuard],
 })

@@ -15,6 +15,7 @@ import {
 	UploadedFiles,
 	UsePipes,
 	ValidationPipe,
+	UseGuards,
 } from '@nestjs/common';
 
 import * as Dto from '../fichaModule.dto';
@@ -26,6 +27,7 @@ import {CriterioService} from 'src/common/dto/params&populate/criterioFormat.ser
 import {Model} from 'mongoose';
 import {InjectModel} from '@nestjs/mongoose';
 import {FindUserByIdDto} from 'src/common/dto/id.dto';
+import {AuthGuard} from 'src/userModule/auth/guards/auth.guard';
 
 @Controller('/ficha')
 export class FichaModuleController {
@@ -53,6 +55,7 @@ export class FichaModuleController {
 	}
 
 	@Post()
+	@UseGuards(AuthGuard)
 	@UseInterceptors(
 		FileInterceptor('marcador', UploadsService.configureMulter(5 * 1024 * 1024, 'fichas/marcador')),
 		FilesInterceptor('images', 5, UploadsService.configureMulter(5 * 1024 * 1024, 'fichas')),
@@ -71,6 +74,7 @@ export class FichaModuleController {
 	}
 
 	@Put('/:id')
+	@UseGuards(AuthGuard)
 	@UsePipes(new ValidationPipe({transform: true}))
 	@UseInterceptors(
 		FileInterceptor('marcador', UploadsService.configureMulter(5 * 1024 * 1024, 'fichas/marcador')),
@@ -96,6 +100,7 @@ export class FichaModuleController {
 	}
 
 	@Delete('/:id')
+	@UseGuards(AuthGuard)
 	@UsePipes(new ValidationPipe({transform: true}))
 	async delete(@Param() params: FindUserByIdDto): Promise<void> {
 		return this.fichaService.delete(params.id);

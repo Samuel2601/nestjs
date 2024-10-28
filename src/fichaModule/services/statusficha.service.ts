@@ -5,13 +5,18 @@ https://docs.nestjs.com/providers#services
 import {Injectable} from '@nestjs/common';
 import {InjectModel} from '@nestjs/mongoose';
 import {Status} from '../models/status.schema';
-import {Model} from 'mongoose';
+import {Model, Types} from 'mongoose';
 import {CreateStatusDto, UpdateStatusDto} from '../fichaModule.dto';
 import {apiResponse} from 'src/common/helpers/apiResponse';
+import {Ficha} from '../models/ficha.schema';
 
+import {Cron} from '@nestjs/schedule';
 @Injectable()
 export class StatusFichaService {
-	constructor(@InjectModel(Status.name) private statusModel: Model<Status>) {}
+	constructor(
+		@InjectModel(Status.name) private statusModel: Model<Status>,
+		@InjectModel(Ficha.name) private fichaModel: Model<Ficha>,
+	) {}
 
 	async findAll(): Promise<any> {
 		try {
@@ -72,5 +77,40 @@ export class StatusFichaService {
 			console.error(error);
 			return apiResponse(500, 'ERROR al eliminar el estado.', null, error);
 		}
+	}
+
+	@Cron('0 0 * * *') // Este cron se ejecuta todos los días a la medianoche
+	async handleCron() {
+		const fichas = await this.fichaModel.find();
+
+		for (const ficha of fichas) {
+			await this.updateFichaStatus(ficha);
+		}
+	}
+
+	async updateFichaStatus(ficha: Ficha): Promise<void> {
+		const currentStatus = await this.statusModel.findById(ficha.status);
+
+		if (!currentStatus) {
+			throw new Error('Estado actual no encontrado');
+		}
+
+		// Calcular la fecha límite para el cambio de estado
+		const limitDate = new Date(ficha.date_event);
+		limitDate.setDate(limitDate.getDate() + currentStatus.daysToNext);
+
+		// Verifica si ha pasado el tiempo requerido
+		if (new Date() >= limitDate) {
+			const nextStatus = await this.getNextStatus(currentStatus);
+
+			if (nextStatus) {
+				ficha.status = new Types.ObjectId(nextStatus._id.toString());
+				await ficha.save();
+			}
+		}
+	}
+
+	private async getNextStatus(currentStatus: Status): Promise<Status | null> {
+		return this.statusModel.findOne({order: currentStatus.order + 1}).exec();
 	}
 }

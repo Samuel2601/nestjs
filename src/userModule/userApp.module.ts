@@ -11,13 +11,15 @@ import {MongooseModule} from '@nestjs/mongoose';
 import {User, UserSchema} from './models/user.schema';
 import {RoleUser, RoleUserSchema} from './models/roleuser.schema';
 import {Permission, PermissionSchema} from './models/permiso.schema';
-import { CacheModule } from 'src/common/cache/Cache.module';
+import {CacheModule} from 'src/common/cache/Cache.module';
 
 @Module({
 	imports: [
-		MongooseModule.forFeature([{name: User.name, schema: UserSchema}]),
-		MongooseModule.forFeature([{name: RoleUser.name, schema: RoleUserSchema}]),
-		MongooseModule.forFeature([{name: Permission.name, schema: PermissionSchema}]),
+		MongooseModule.forFeature([
+			{name: User.name, schema: UserSchema},
+			{name: RoleUser.name, schema: RoleUserSchema},
+			{name: Permission.name, schema: PermissionSchema},
+		]),
 		UserModule,
 		RoleModule,
 		PermisoModule,
@@ -26,7 +28,7 @@ import { CacheModule } from 'src/common/cache/Cache.module';
 		EmailModule,
 		UploadsModule,
 		AuthModule,
-		CacheModule
+		CacheModule,
 	],
 	providers: [],
 	controllers: [],
