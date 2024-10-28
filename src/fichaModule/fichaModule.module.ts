@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { FichaModuleController } from './fichaModule.controller';
 import { FichaModuleService } from './fichaModule.service';
+import { Ficha, FichaSchema } from './models/ficha.schema';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
-  imports: [],
+  imports: [MongooseModule.forFeature([{ name: Ficha.name, schema: FichaSchema }])],
   providers: [
     FichaModuleService,
   ],
