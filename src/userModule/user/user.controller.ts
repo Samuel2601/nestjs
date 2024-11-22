@@ -14,6 +14,7 @@ import {
 	ValidationPipe,
 	UseInterceptors,
 	UploadedFile,
+	UseGuards,
 } from '@nestjs/common';
 import {UserService} from './user.service';
 import {CreateUserDto, UpdateUserDto} from './user.dto';
@@ -24,17 +25,19 @@ import {CriterioService} from 'src/common/dto/params&populate/criterioFormat.ser
 import {Model} from 'mongoose';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {UploadsService} from 'src/common/uploads/uploads.service';
+import {AuthGuard} from 'src/userModule/auth/guards/auth.guard';
 
 @Controller('/users')
 export class UserController {
 	constructor(
 		private readonly usersService: UserService,
-		@InjectModel(User.name) private roleModel: Model<User>,
+		@InjectModel(User.name) private userModel: Model<User>,
 		private readonly criterioService: CriterioService,
 	) {}
 
 	// Obtener un usuario por su ID (GET /users/:id)
 	@Get('/:id')
+	@UseGuards(AuthGuard)
 	@UsePipes(new ValidationPipe({transform: true}))
 	async findById(@Param() params: FindUserByIdDto): Promise<any> {
 		return await this.usersService.findById(params.id);
@@ -42,12 +45,13 @@ export class UserController {
 
 	// Obtener todos los usuarios (GET /users)
 	@Get()
+	@UseGuards(AuthGuard)
 	async getAllUsersfilter(@Query() query) {
 		// Obtener los filtros y los campos de populate
 		const {filter, populateFields} = this.criterioService.getfilterPopulate(query);
 		// Formatear los filtros
-		const filterparse = this.criterioService.criterioFormat(this.roleModel, filter);
-		const populateFieldsparse = this.criterioService.getPopulateFields(this.roleModel, populateFields); // Obtener los campos de populate
+		const filterparse = this.criterioService.criterioFormat(this.userModel, filter);
+		const populateFieldsparse = this.criterioService.getPopulateFields(this.userModel, populateFields); // Obtener los campos de populate
 
 		return this.usersService.findAllfilter(filterparse, populateFieldsparse);
 	}
@@ -65,6 +69,7 @@ export class UserController {
 
 	// Actualizar un usuario (PUT /users/:id)
 	@Put('/:id')
+	@UseGuards(AuthGuard)
 	@UsePipes(new ValidationPipe({transform: true}))
 	async updateUser(@Param() params: FindUserByIdDto, @Body() updateUserDto: UpdateUserDto): Promise<any> {
 		return await this.usersService.updateUser(params.id, updateUserDto);
@@ -72,18 +77,21 @@ export class UserController {
 
 	// Eliminar un usuario (DELETE /users/:id)
 	@Delete('/:id')
+	@UseGuards(AuthGuard)
 	@UsePipes(new ValidationPipe({transform: true}))
 	async deleteUser(@Param() params: FindUserByIdDto): Promise<any> {
 		return await this.usersService.deleteUser(params.id);
 	}
 
 	@Post('batch')
+	@UseGuards(AuthGuard)
 	@UsePipes(new ValidationPipe({transform: true}))
 	async createBatch(@Body() createUsersDto: CreateUserDto[]): Promise<any> {
 		return await this.usersService.createBatch(createUsersDto);
 	}
 
 	@Put('batch')
+	@UseGuards(AuthGuard)
 	@UsePipes(new ValidationPipe({transform: true}))
 	async updateBatch(@Body() updateUsersDto: UpdateUserDto[]): Promise<any> {
 		return await this.usersService.updateBatch(updateUsersDto);

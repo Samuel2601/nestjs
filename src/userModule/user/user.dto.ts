@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/mapped-types';
 import {IsString, IsNotEmpty, IsEmail, IsOptional, IsBoolean, IsMongoId, MinLength} from 'class-validator';
 
 /**
@@ -89,107 +90,10 @@ export class CreateUserDto {
 /**
  * DTO para actualizar un usuario existente.
  */
-export class UpdateUserDto {
+export class UpdateUserDto extends PartialType(CreateUserDto) {
+	/*
+	* Identificador del usuario.
+	*/
 	@IsMongoId()
 	_id: string;
-	/**
-	 * Nombre del usuario (opcional).
-	 */
-	@IsString()
-	@IsOptional()
-	name?: string;
-
-	/**
-	 * Apellido del usuario (opcional).
-	 */
-	@IsString()
-	@IsOptional()
-	last_name?: string;
-
-	/**
-	 * DNI del usuario (opcional).
-	 */
-	@IsString()
-	@IsOptional()
-	dni?: string;
-
-	/**
-	 * Teléfono del usuario (opcional).
-	 */
-	@IsString()
-	@IsOptional()
-	phone?: string;
-
-	/**
-	 * Correo electrónico del usuario (opcional).
-	 */
-	@IsEmail()
-	@IsOptional()
-	email?: string;
-
-	/**
-	 * Contraseña del usuario, con al menos 6 caracteres (opcional).
-	 */
-	@IsString()
-	@IsOptional()
-	@MinLength(6)
-	password?: string;
-
-	/**
-	 * Indicador de si el usuario está verificado (opcional).
-	 */
-	@IsBoolean()
-	@IsOptional()
-	verificado?: boolean;
-
-	/**
-	 * Estado del usuario (activo o inactivo) (opcional).
-	 */
-	@IsBoolean()
-	@IsOptional()
-	status?: boolean;
-
-	/**
-	 * ID del rol asociado al usuario (opcional).
-	 */
-	@IsMongoId()
-	@IsOptional()
-	role?: string;
-
-	/**
-	 * Redes sociales del usuario (opcional).
-	 */
-	@IsOptional()
-	redes?: {
-		provider: string; // Ejemplo: 'google', 'facebook', 'github'
-		providerId: string; // ID del usuario en el proveedor
-		profileUrl?: string; // URL de perfil del usuario en esa red social
-	}[];
-
-	/**
-	 * URL de la foto del usuario (opcional).
-	 */
-	@IsString()
-	@IsOptional()
-	photo?: string;
-
-	/**
-	 * Código de verificación del usuario (opcional).
-	 */
-	@IsString()
-	@IsOptional()
-	verificationCode?: string;
-
-	/**
-	 * Fecha de creación del usuario (opcional).
-	 */
-	@IsOptional()
-	createdAt?: Date;
-
-	/**
-	 * Contraseña temporal del usuario (opcional).
-	 */
-	@IsString()
-	@IsOptional()
-	password_temp?: string;
 }

@@ -1,7 +1,9 @@
-import {Controller, Post, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe, Get, Query, Session, UseGuards, Res} from '@nestjs/common';
+import {Controller, Post, Body, HttpCode, HttpStatus, UsePipes, ValidationPipe, Get, Query, Session, UseGuards, Res, Request, UnauthorizedException} from '@nestjs/common';
 import {AuthService} from './auth.service';
 import {LoginDto} from './auth.dto';
 import {Response} from 'express';
+import {ClientIP} from './decorators/ip.decorator';
+import {AuthGuard} from './guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -10,36 +12,33 @@ export class AuthController {
 	@Post('login')
 	@HttpCode(HttpStatus.OK)
 	@UsePipes(new ValidationPipe({transform: true}))
-	async login(@Body() loginDto: LoginDto) {
-		const user = await this.authService.validateUser(loginDto.email, loginDto.password);
-		if (!user) {
-			return {message: 'Invalid credentials'};
-		}
-		return this.authService.login(user);
+	async login(@ClientIP() ip: string, @Body() loginDto: LoginDto) {
+		const user = await this.authService.validateUser(loginDto.email, loginDto.password, ip);
+		return this.authService.login(user, ip, 'Correo y contraseña');
 	}
 
 	@Post('google')
 	@HttpCode(HttpStatus.OK)
-	async googleLogin(@Body('token') token: string) {
-		return this.authService.googleLogin(token);
+	async googleLogin(@ClientIP() ip: string, @Body('token') token: string) {
+		return this.authService.googleLogin(token, ip);
 	}
 
 	@Post('google/one-tap')
 	@HttpCode(HttpStatus.OK)
-	async googleOneTapLogin(@Body('credential') credential: string) {
-		return this.authService.googleOneTapLogin(credential);
+	async googleOneTapLogin(@ClientIP() ip: string, @Body('credential') credential: string) {
+		return this.authService.googleOneTapLogin(credential, ip);
 	}
 
 	@Post('google/plus')
 	@HttpCode(HttpStatus.OK)
-	async googlePlusLogin(@Body('accessToken') accessToken: string) {
-		return this.authService.googlePlusLogin(accessToken);
+	async googlePlusLogin(@ClientIP() ip: string, @Body('accessToken') accessToken: string) {
+		return this.authService.googlePlusLogin(accessToken, ip);
 	}
 
 	@Post('facebook')
 	@HttpCode(HttpStatus.OK)
-	async facebookLogin(@Body('accessToken') accessToken: string) {
-		return this.authService.facebookLogin(accessToken);
+	async facebookLogin(@ClientIP() ip: string, @Body('accessToken') accessToken: string) {
+		return this.authService.facebookLogin(accessToken, ip);
 	}
 
 	@Get('outlook')
@@ -49,13 +48,19 @@ export class AuthController {
 		// Almacenar codeVerifier y state en la sesión
 		session.outlookCodeVerifier = codeVerifier;
 		session.outlookState = state;
-		console.log(url);
-		// Redirigir al usuario a la URL de autorización  
+		//console.log(url);
+		// Redirigir al usuario a la URL de autorización
 		res.redirect(url); // Usa res.redirect(url) en lugar de @Redirect
 	}
 
 	@Get('outlook/callback')
-	async callbackOutlook(@Query('code') code: string, @Query('error') error: string, @Query('state') state: string, @Session() session: Record<string, any>) {
+	async callbackOutlook(
+		@ClientIP() ip: string,
+		@Query('code') code: string,
+		@Query('error') error: string,
+		@Query('state') state: string,
+		@Session() session: Record<string, any>,
+	) {
 		if (error) {
 			console.error('Error en el callback:', error);
 			return {mensaje: 'Error durante el inicio de sesión con Outlook', error};
@@ -74,7 +79,7 @@ export class AuthController {
 		}
 
 		try {
-			const resultado = await this.authService.outlookLogin(code, codeVerifier,state);
+			const resultado = await this.authService.outlookLogin(code, codeVerifier, state, ip);
 			// Limpiar codeVerifier y state de la sesión
 			delete session.outlookCodeVerifier;
 			delete session.outlookState;
@@ -87,13 +92,29 @@ export class AuthController {
 
 	@Post('apple')
 	@HttpCode(HttpStatus.OK)
-	async appleLogin(@Body('idToken') idToken: string) {
-		return this.authService.appleLogin(idToken);
+	async appleLogin(@ClientIP() ip: string, @Body('idToken') idToken: string) {
+		return this.authService.appleLogin(idToken, ip);
 	}
 
-	@Post('logout')
-	@HttpCode(HttpStatus.OK)
-	async logout(@Body('userId') userId: string) {
-		return this.authService.logout(userId);
+	@Post('refresh')
+	@UseGuards(AuthGuard)
+	@UsePipes(new ValidationPipe({transform: true}))
+	async refresh(@ClientIP() ip: string, @Request() req: Request) {
+		// Llama al servicio para renovar el token
+		const token = this.extractTokenFromHeader(req);
+		const newAccessToken = await this.authService.refreshToken(req['user'].sub, token, ip);
+
+		return newAccessToken;
+	}
+	private extractTokenFromHeader(request: any): string | undefined {
+		const [type, token] = request.headers.authorization?.split(' ') ?? [];
+		return type === 'Bearer' ? token : undefined;
+	}
+
+	@Get('logout')
+	@UseGuards(AuthGuard)
+	@UsePipes(new ValidationPipe({transform: true}))
+	async logout(@ClientIP() ip: string, @Request() req: Request) {
+		return await this.authService.logout(req['user'].sub);
 	}
 }

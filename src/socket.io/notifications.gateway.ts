@@ -46,7 +46,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
 	}
 
 	@SubscribeMessage('notify-user')
-	handleNotifyUser(client: Socket, {userId, data}: {userId: string; data: any}) {
+	handleNotifyUser(userId: string, data: any) {
 		const userSockets = this.userSockets[userId];
 		if (userSockets && userSockets.length > 0) {
 			userSockets.forEach((socket) => {
@@ -56,6 +56,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
 			console.log(`User ${userId} not connected.`);
 		}
 	}
+	
 	// Funciones de notificación para cambios de permisos y roles
 	notifyPermissionChange(userId: string, action: string, permiso: string) {
 		const userSockets = this.userSockets[userId];

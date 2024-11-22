@@ -1,15 +1,14 @@
 import {Schema, Prop, SchemaFactory} from '@nestjs/mongoose';
 import {Document, Types, Model} from 'mongoose';
 import {Permission} from './permiso.schema';
-import {forwardRef} from '@nestjs/common';
 
 @Schema({timestamps: true})
 export class RoleUser extends Document {
 	@Prop({required: true, unique: true})
 	name: string;
 
-	@Prop([{type: Types.ObjectId, ref: forwardRef(() => Permission.name)}])
-	permisos: Types.ObjectId[];
+	@Prop([{type: Types.ObjectId, ref: Permission.name}])
+	permisos: Permission[];
 
 	@Prop({type: Boolean, default: false})
 	is_default: boolean;

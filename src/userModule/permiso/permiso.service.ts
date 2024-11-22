@@ -24,43 +24,43 @@ export class PermisoService implements OnModuleInit {
 	}
 
 	async initializePermissions() {
-		const permissions = await this.permissModel.find().exec();
-		if (permissions.length === 0) {
-			// Obtén el adaptador HTTP
-			const httpAdapter = this.httpAdapterHost.httpAdapter;
-			const app = httpAdapter.getInstance();
+		//const permissions = await this.permissModel.find().exec();
+		// Obtén el adaptador HTTP
+		const httpAdapter = this.httpAdapterHost.httpAdapter;
+		const app = httpAdapter.getInstance();
 
-			// Accede a las rutas directamente usando app._router.stack
-			const routes = app._router.stack
-				.filter((layer) => layer.route) // Filtra las capas que son rutas
-				.map((layer) => ({
-					path: layer.route.path,
-					methods: layer.route.methods,
-				}));
+		// Accede a las rutas directamente usando app._router.stack
+		const routes = app._router.stack
+			.filter((layer) => layer.route) // Filtra las capas que son rutas
+			.map((layer) => ({
+				path: layer.route.path,
+				methods: layer.route.methods,
+			}));
 
-			for (const route of routes) {
-				const methods = Object.keys(route.methods);
-				for (const method of methods) {
-					const permission = new this.permissModel({
-						name: route.path,
-						method: method.toLowerCase(),
-						users: [], // Aquí puedes añadir usuarios si es necesario
-						is_default: false,
-					});
-
-					try {
-						await permission.save();
-						console.log(`Permiso guardado: ${permission.name} ${permission.method}`);
-					} catch (error) {
-						console.error(`Error al guardar el permiso: ${permission.name} ${permission.method}`, error);
+		for (const route of routes) {
+			const methods = Object.keys(route.methods);
+			for (const method of methods) {
+				const permission = new this.permissModel({
+					name: route.path,
+					method: method.toLowerCase(),
+					users: [], // Aquí puedes añadir usuarios si es necesario
+					is_default: false,
+				});
+				// Guarda el permiso en la base de datos
+				try {
+					if (this.permissModel.findOne({name: route.path, method: method.toLowerCase()})) {
+						console.log(`Permiso ya existe: ${permission.name} ${permission.method}`);
+						continue;						
 					}
+					await permission.save();
+					console.log(`Permiso guardado: ${permission.name} ${permission.method}`);
+				} catch (error) {
+					console.error(`Error al guardar el permiso: ${permission.name} ${permission.method}`, error);
 				}
 			}
-
-			console.log('Permisos inicializados.');
-		} else {
-			console.log('Ya existen permisos en la base de datos.');
 		}
+
+		console.log('Permisos inicializados.');
 	}
 
 	/**
@@ -74,7 +74,7 @@ export class PermisoService implements OnModuleInit {
 				query = query.populate(field);
 			});
 			const data = await query.exec();
-			return apiResponse(200, 'Roles obtenidos con éxito.', data, null);
+			return apiResponse(200, 'Permisos obtenidos con éxito.', data, null);
 		} catch (error) {
 			console.error(error);
 			return apiResponse(500, 'ERROR', null, error);
@@ -94,12 +94,12 @@ export class PermisoService implements OnModuleInit {
 		}
 	}
 
-	async createPermiso(createPermisoDto: CreatePermissionDto): Promise<any> {
-		const {name, method, users} = createPermisoDto;
+	async createPermission(createPermissionDto: CreatePermissionDto): Promise<any> {
+		const {name, method, users} = createPermissionDto;
 		try {
 			// Verifica si ya existe un rol con el mismo nombre
-			const existingRole = await this.permissModel.findOne({name});
-			if (existingRole) {
+			const existingPermission = await this.permissModel.findOne({name});
+			if (existingPermission) {
 				return apiResponse(400, 'Ya existe un rol con ese nombre', null, null);
 			}
 
@@ -126,7 +126,7 @@ export class PermisoService implements OnModuleInit {
 		}
 	}
 
-	async updateRole(id: string, data: UpdatePermissionDto): Promise<any> {
+	async updatePermission(id: string, data: UpdatePermissionDto): Promise<any> {
 		try {
 			const permissActual = await this.permissModel.findById(id).populate(this.userModel.name);
 			if (!permissActual) {
@@ -177,7 +177,7 @@ export class PermisoService implements OnModuleInit {
 		}
 	}
 
-	async deleteRole(id: string): Promise<any> {
+	async deletePermission(id: string): Promise<any> {
 		try {
 			const permiss = await this.permissModel.findByIdAndDelete(id);
 			if (!permiss) {

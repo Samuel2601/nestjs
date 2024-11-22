@@ -5,11 +5,15 @@ import { NotificationsGateway } from './notifications.gateway';
 export class NotificationsService {
   constructor(private readonly notificationsGateway: NotificationsGateway) {}
 
-  notifyPermissionChange(userId: string, action: string, permiso: string) {
+  async notifyPermissionChange(userId: string, action: string, permiso: string) {
     this.notificationsGateway.notifyPermissionChange(userId, action, permiso);
   }
 
-  notifyRoleChange(userId: string, action: string, roleId: string) {
+  async notifyRoleChange(userId: string, action: string, roleId: string) {
     this.notificationsGateway.notifyRoleChange(userId, action, roleId);
+  }
+
+  async notifyUser(userId: string, data: any,) {
+     this.notificationsGateway.handleNotifyUser(userId, data);
   }
 }
