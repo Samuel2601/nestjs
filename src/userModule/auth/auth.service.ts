@@ -91,7 +91,7 @@ export class AuthService {
 		};
 
 		// Generar Access Token
-		const accessToken = this.jwtService.sign(accessTokenPayload, {expiresIn: '15m'});
+		const accessToken = this.generateAccessToken(accessTokenPayload);
 
 		// Generar Refresh Token sin la IP
 		const refreshTokenPayload = {
@@ -99,7 +99,7 @@ export class AuthService {
 		};
 
 		// Generar el token sin la IP
-		const refreshToken = this.jwtService.sign(refreshTokenPayload, {expiresIn: '7d'});
+		const refreshToken = this.generateRefreshToken(refreshTokenPayload);
 
 		// Guardar el Refresh Token en la base de datos
 		await this.refreshTokenModel.create({
@@ -158,11 +158,19 @@ export class AuthService {
 			sub: userId,
 			ip: ip, // Cifrar la IP de nuevo si es necesario
 		};
-		const newAccessToken = this.jwtService.sign(newAccessTokenPayload, {expiresIn: '15m'});
+		const newAccessToken = this.generateAccessToken(newAccessTokenPayload);
 
 		return {
 			access_token: newAccessToken,
 		};
+	}
+
+	generateAccessToken(payload: any): string {
+		return this.jwtService.sign(payload, {expiresIn: '15m'});
+	}
+
+	generateRefreshToken(payload: any): string {
+		return this.jwtService.sign(payload, {expiresIn: '7d'});
 	}
 
 	async googleLogin(token: string, ip: string) {
@@ -313,7 +321,7 @@ export class AuthService {
 	}
 
 	private async handleSocialLogin(provider: string, providerId: string, userData: any, ip: string) {
-		console.log("Información de la red social:", provider, providerId, userData);
+		console.log('Información de la red social:', provider, providerId, userData);
 		const email = userData.email || userData.mail;
 
 		// Primero busca por el providerId y provider

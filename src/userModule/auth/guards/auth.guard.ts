@@ -61,40 +61,27 @@ export class AuthGuard implements CanActivate {
 		return type === 'Bearer' ? token : undefined;
 	}
 
+	private async hasRolePermission(role: any, path: string, method: string): Promise<boolean> {
+		return role.permisos.some((permission: any) => permission.name === path && permission.method === method);
+	}
+
+	private async hasUserPermission(userId: string, path: string, method: string): Promise<boolean> {
+		const userPermissions = await this.permissionModel.find({
+			users: userId,
+			name: path,
+			method: method,
+		});
+		return userPermissions.length > 0;
+	}
+
 	private async checkRoutePermission(userId: string, path: string, method: string): Promise<boolean> {
-		try {
-			// Obtener el usuario y hacer populate del rol
-			const user = await this.userModel.findById(userId);
+		const user = await this.userModel.findById(userId);
+		if (!user || !user.role) return false;
 
-			if (!user || !user.role) {
-				return false;
-			}
+		const role = await this.getRoleWithPermissions(user.role.toString());
+		if (!role) return false;
 
-			// Obtener el rol y hacer populate de los permisos
-			const role = await this.getRoleWithPermissions(user.role.toString());
-			if (!role) {
-				return false;
-			}
-
-			// Verificar si el rol tiene el permiso requerido
-			const hasPermission = role.permisos.some((permission: any) => permission.name === path && permission.method === method);
-
-			if (hasPermission) {
-				return true;
-			}
-
-			// Si el rol no tiene el permiso, verificar los permisos específicos del usuario
-			const userPermissions = await this.permissionModel.find({
-				users: userId,
-				name: path,
-				method: method,
-			});
-
-			return userPermissions.length > 0;
-		} catch (error) {
-			console.error(error);
-			return false;
-		}
+		return (await this.hasRolePermission(role, path, method)) || (await this.hasUserPermission(userId, path, method));
 	}
 
 	// Método para obtener los permisos
